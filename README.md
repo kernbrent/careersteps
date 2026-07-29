@@ -15,9 +15,6 @@ Static website for [careersteps.net](https://careersteps.net).
 
 Open the repository folder in Visual Studio Code, then open `index.html` with Live Server. All navigation uses relative links so the site works locally and on GitHub Pages.
 
-## Branches
+## Workflow
 
-- `main` — production-ready website
-- `dev` — active development
-
-Develop and test changes on `dev`, then merge approved work into `main` for production.
+Work and test locally using Live Server. Commit changes to `main` locally, then push to GitHub only when the site is ready for production.
