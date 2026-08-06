@@ -647,6 +647,27 @@ h3 {
   font-size: 1.25rem;
 }
 
+.about-profile {
+  text-align: center;
+}
+
+.about-headshot {
+  display: block;
+  width: min(100%, 20rem);
+  aspect-ratio: 1;
+  margin: 0 auto 1.25rem;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 1rem 2.5rem rgba(29, 52, 68, 0.18);
+}
+
+.about-profile .profile-name {
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
 .contact-list {
   margin: 1.5rem 0 0;
   padding: 0;
@@ -914,5 +935,32 @@ h3 {
   .calendly-inline-widget {
     min-height: 700px;
     height: 700px;
+  }
+}
+
+.developer-credit {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: fit-content;
+  margin-top: 0.75rem;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.developer-credit img {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  opacity: 0.76;
+}
+
+@media (max-width: 640px) {
+  .developer-credit {
+    width: auto;
+    justify-content: center;
+    text-align: left;
   }
 }
