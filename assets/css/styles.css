@@ -986,11 +986,6 @@ h3 {
   to { transform: rotate(var(--route-angle)) scaleX(1); }
 }
 
-@keyframes atlas-arrow-arrive {
-  from { opacity: 0; transform: translate(-12px, 8px) rotate(var(--arrow-angle)) scale(0.65); }
-  to { opacity: 1; transform: translate(0, 0) rotate(var(--arrow-angle)) scale(1); }
-}
-
 @keyframes atlas-waypoint-arrive {
   from { opacity: 0; transform: translateY(12px) scale(0.88); }
   to { opacity: 1; transform: translateY(0) scale(1); }
@@ -1062,10 +1057,6 @@ h3 {
 .motion-enabled .atlas-hero.hero-animate .route-leg-2 { animation-delay: 1.05s; }
 .motion-enabled .atlas-hero.hero-animate .route-leg-3 { animation-delay: 1.45s; }
 
-.motion-enabled .atlas-hero.hero-animate .route-arrow {
-  animation: atlas-arrow-arrive 0.5s 1.88s cubic-bezier(0.2, 0.9, 0.25, 1.2) both;
-}
-
 .motion-enabled .atlas-hero.hero-animate .waypoint {
   opacity: 0;
   animation: atlas-waypoint-arrive 0.55s cubic-bezier(0.2, 0.9, 0.25, 1.2) both;
@@ -1102,7 +1093,7 @@ h3 {
   transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
 }
 
-.motion-enabled .motion-lift.reveal-item.is-visible {
+.motion-enabled .motion-flash.reveal-item.is-visible {
   outline: 1px solid transparent;
   animation: tile-flash-on 0.72s calc(var(--reveal-delay, 0ms) + 90ms) ease-out both;
 }

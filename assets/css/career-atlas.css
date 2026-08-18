@@ -72,19 +72,17 @@ h1, h2, h3 { color: var(--atlas-navy); }
 .route-leg-1 { left: 5.5%; top: 72%; width: 29%; }
 .route-leg-2 { left: 32.5%; top: 54%; width: 28%; }
 .route-leg-3 { --route-angle: -28deg; left: 58.5%; top: 36.5%; width: 25%; }
-.route-arrow {
-  --arrow-angle: -28deg;
+.route-leg-3::after {
+  content: "";
   position: absolute;
-  left: 78.2%;
-  top: 13.2%;
-  width: 0;
-  height: 0;
-  border-top: 6px solid transparent;
-  border-bottom: 6px solid transparent;
-  border-left: 12px solid var(--atlas-copper);
-  filter: drop-shadow(0 0 5px rgba(196,125,70,.25));
-  transform: rotate(var(--arrow-angle));
-  transform-origin: center;
+  top: 50%;
+  right: 8px;
+  width: 22px;
+  height: 18px;
+  background: #df9155;
+  clip-path: polygon(0 0, 100% 50%, 0 100%, 28% 50%);
+  filter: drop-shadow(0 0 6px rgba(223,145,85,.42));
+  transform: translateY(-50%);
 }
 .waypoint { position: absolute; z-index: 1; width: 10rem; color: var(--atlas-ivory); font-size: .78rem; }
 .waypoint::before { content: ""; display: block; width: 1rem; height: 1rem; margin-bottom: .5rem; background: var(--atlas-navy); border: 3px solid var(--atlas-copper); outline: 1px solid var(--atlas-copper); outline-offset: 4px; border-radius: 50%; }
@@ -187,7 +185,6 @@ h1, h2, h3 { color: var(--atlas-navy); }
   .route-leg-1 { --route-angle:-12deg; left:5%; top:72%; width:28%; }
   .route-leg-2 { --route-angle:-12deg; left:32%; top:54%; width:27%; }
   .route-leg-3 { --route-angle:-18deg; left:58%; top:37%; width:22%; }
-  .route-arrow { --arrow-angle:-18deg; left:78%; top:14%; }
   .atlas-service-route { grid-template-columns:repeat(2,1fr); }
   .atlas-service:nth-child(3) { border-left:0; }
   .atlas-service-route::before { display:none; }
@@ -212,7 +209,6 @@ h1, h2, h3 { color: var(--atlas-navy); }
   .route-leg-1 { --route-angle:-38deg; left:4.5%; top:75.5%; width:33%; }
   .route-leg-2 { --route-angle:-41deg; left:30%; top:58%; width:32%; }
   .route-leg-3 { --route-angle:-66deg; left:54%; top:40%; width:32%; }
-  .route-arrow { --arrow-angle:-66deg; left:65%; top:14%; }
   .wp-1{left:2%;top:73%}.wp-2{left:28%;top:56%}.wp-3{left:52%;top:38%}.wp-4{left:auto;right:0;top:15%;width:6.6rem}
   .atlas-service-route { grid-template-columns:1fr; }
   .atlas-service + .atlas-service { border-left:0; border-top:1px solid var(--atlas-line); }

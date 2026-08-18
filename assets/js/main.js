@@ -43,7 +43,8 @@ if (!reduceMotion) {
     ".trip-panel > :first-child",
     ".trip-detail",
     ".process-step",
-    ".service-section",
+    ".service-layout > :first-child",
+    ".service-content > *",
     ".case-header",
     ".case-block",
     ".about-grid > *",
@@ -61,6 +62,7 @@ if (!reduceMotion) {
     ".trip-details",
     ".process",
     ".case-grid",
+    ".service-content",
     ".footer-grid",
   ].join(", ");
 
@@ -76,6 +78,11 @@ if (!reduceMotion) {
     ".work-feature",
   ].join(", ");
 
+  const flashSelector = [
+    liftSelector,
+    ".service-content > *",
+  ].join(", ");
+
   document.querySelectorAll(staggerSelector).forEach((group) => {
     [...group.children].forEach((item, index) => {
       item.style.setProperty("--reveal-delay", `${Math.min(index * 90, 450)}ms`);
@@ -84,6 +91,10 @@ if (!reduceMotion) {
 
   document.querySelectorAll(liftSelector).forEach((item) => {
     item.classList.add("motion-lift");
+  });
+
+  document.querySelectorAll(flashSelector).forEach((item) => {
+    item.classList.add("motion-flash");
   });
 
   if ("IntersectionObserver" in window) {
