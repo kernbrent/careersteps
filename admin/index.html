@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: blob: https://*.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <title>Admin | Career Steps Consulting</title>
+  <meta name="description" content="Private bookkeeping and reporting for Career Steps Consulting.">
+  <link rel="icon" type="image/png" href="../assets/images/career-steps-logo.png">
+  <link rel="stylesheet" href="assets/admin.css">
+</head>
+<body>
+  <a class="skip-link" href="#admin-main">Skip to main content</a>
+
+  <section class="loading-view" id="loading-view" aria-live="polite">
+    <img src="../assets/images/career-steps-logo.png" alt="">
+    <strong>Opening Career Steps Admin...</strong>
+  </section>
+
+  <section class="auth-view" id="auth-view" hidden>
+    <div class="auth-brand">
+      <img src="../assets/images/career-steps-logo.png" alt="Career Steps Consulting">
+      <div><span>Career Steps Consulting</span><strong>Admin Portal</strong></div>
+    </div>
+    <div class="auth-card">
+      <p class="eyebrow">Private access</p>
+      <h1>Welcome back.</h1>
+      <p>Sign in to manage business income, expenses, mileage, clients, and CPA-ready reports.</p>
+      <form class="auth-form" id="login-form">
+        <label>Email address<input type="email" name="email" autocomplete="username" required></label>
+        <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+        <p class="form-message" id="auth-message" aria-live="polite"></p>
+        <button class="button button-wide" type="submit">Sign in securely</button>
+        <button class="text-button" type="button" id="forgot-password">Forgot password?</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="setup-view" id="setup-view" hidden>
+    <div class="setup-card">
+      <img src="../assets/images/career-steps-logo.png" alt="Career Steps Consulting">
+      <p class="eyebrow">One-time setup</p>
+      <h1>Connect the private bookkeeping database.</h1>
+      <p>The admin portal is installed, but its secure Supabase connection has not been configured yet. Follow the repository setup guide to create the database, private attachment bucket, and first authorized admin.</p>
+      <a class="button" href="../">Return to the public site</a>
+    </div>
+  </section>
+
+  <div class="admin-shell" id="admin-shell" hidden>
+    <aside class="sidebar" id="sidebar">
+      <a class="admin-brand" href="#/dashboard" aria-label="Career Steps admin dashboard">
+        <img src="../assets/images/career-steps-logo.png" alt="">
+        <span><strong>Career Steps</strong><small>Admin Portal</small></span>
+      </a>
+      <nav class="admin-nav" aria-label="Admin navigation">
+        <a class="is-active" href="#/dashboard" data-route="dashboard"><span class="nav-mark">D</span>Dashboard</a>
+        <a href="#/expenses" data-route="expenses"><span class="nav-mark">E</span>Expenses</a>
+        <a href="#/income" data-route="income"><span class="nav-mark">I</span>Income</a>
+        <a href="#/mileage" data-route="mileage"><span class="nav-mark">M</span>Mileage</a>
+        <a href="#/clients" data-route="clients"><span class="nav-mark">C</span>Clients</a>
+        <a href="#/reports" data-route="reports"><span class="nav-mark">R</span>Reports</a>
+        <a href="#/settings" data-route="settings"><span class="nav-mark">S</span>Settings</a>
+      </nav>
+      <div class="sidebar-footer">
+        <p>Tax year <strong data-active-tax-year>2026</strong></p>
+        <button class="sign-out-button" type="button" id="sign-out">Sign out</button>
+      </div>
+    </aside>
+
+    <div class="admin-workspace">
+      <header class="admin-header">
+        <button class="menu-button" type="button" id="menu-button" aria-expanded="false" aria-controls="sidebar">Menu</button>
+        <div>
+          <p class="eyebrow" id="page-eyebrow">Overview</p>
+          <h1 id="page-title">Dashboard</h1>
+        </div>
+        <div class="header-actions">
+          <button class="search-button" type="button" id="global-search-button">Search records</button>
+          <button class="button" type="button" data-action="add-expense">+ Add expense</button>
+        </div>
+      </header>
+
+      <main class="admin-main" id="admin-main" tabindex="-1">
+        <section class="view" id="dashboard-view" data-view="dashboard">
+          <div class="dashboard-intro">
+            <div><p class="section-kicker">This tax year</p><h2>Your business at a glance.</h2></div>
+            <div class="quick-actions" aria-label="Quick actions">
+              <button type="button" data-action="add-expense">Add expense</button>
+              <button type="button" data-action="add-income">Add income</button>
+              <button type="button" data-action="add-mileage">Log mileage</button>
+              <a href="#/reports">Build report</a>
+            </div>
+          </div>
+
+          <div class="metric-grid" id="dashboard-metrics">
+            <article class="metric-card metric-income"><span>Income received</span><strong>$0.00</strong><small>Year to date</small></article>
+            <article class="metric-card metric-expense"><span>Included expenses</span><strong>$0.00</strong><small>Year to date</small></article>
+            <article class="metric-card metric-net"><span>Net business income</span><strong>$0.00</strong><small>Before mileage deduction</small></article>
+            <article class="metric-card metric-mileage"><span>Mileage &amp; tolls</span><strong>0.0 mi</strong><small>$0.00 in tolls</small></article>
+          </div>
+
+          <div class="dashboard-grid">
+            <section class="panel panel-wide">
+              <div class="panel-heading"><div><p class="section-kicker">Activity</p><h2>Recent transactions</h2></div><a href="#/reports">View all</a></div>
+              <div class="empty-state compact" id="recent-transactions">
+                <span class="empty-mark">CS</span>
+                <div><strong>No transactions yet</strong><p>Add your first expense or client payment to begin the ledger.</p></div>
+              </div>
+            </section>
+            <section class="panel attention-panel">
+              <div class="panel-heading"><div><p class="section-kicker">Needs attention</p><h2>Before tax time</h2></div></div>
+              <ul class="attention-list" id="attention-list">
+                <li><span>Missing receipts</span><strong>0</strong></li>
+                <li><span>Needs review</span><strong>0</strong></li>
+                <li><span>CPA review</span><strong>0</strong></li>
+                <li><span>Outstanding invoices</span><strong>$0.00</strong></li>
+              </ul>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <dialog class="record-dialog" id="record-dialog" aria-labelledby="dialog-title"></dialog>
+  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-dialog-title"></dialog>
+  <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
+  <script src="assets/config.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
