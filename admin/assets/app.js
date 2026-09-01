@@ -623,7 +623,7 @@
     }).join("");
     return `
       <section class="view">
-        <div class="section-heading-row"><div><p class="section-kicker">Relationships</p><h2>Clients & projects</h2><p>Connect income, expenses, and mileage to the work that generated them.</p></div></div>
+        <div class="section-heading-row"><div><p class="section-kicker">Relationships</p><h2>Clients & projects</h2><p>Clients can stand alone. Every project must belong to a client, and can then be connected to income, expenses, and mileage.</p></div></div>
         ${pageToolbar("clients", "Search client, contact, project, or notes", "add-client", "Add client", '<button class="secondary-button" type="button" data-action="add-project">+ Add project</button>')}
         <div class="panel table-panel">${state.clients.length ? `
           <div class="table-wrap"><table class="data-table">
@@ -1559,7 +1559,7 @@
     const record = item || { client_id: clientId, name: "", description: "", start_date: "", end_date: "", is_active: true };
     dialogFrame(
       item ? "Edit project" : "Add project",
-      "Projects provide an optional second level of client reporting.",
+      "Every project must belong to one client. Clients can be saved without projects.",
       `<form class="record-form" data-form="project" data-id="${item?.id || ""}">
         <div class="form-section"><div class="form-grid">
           <label class="field">Client<select name="client_id" required>${optionList(state.clients.filter((clientItem) => clientItem.is_active), record.client_id, "Select client")}</select></label>
@@ -1869,8 +1869,10 @@
   async function saveProject(form) {
     const data = new FormData(form);
     const id = form.dataset.id || null;
+    const clientId = String(data.get("client_id") || "");
+    if (!clientId) throw new Error("Choose a client before saving the project.");
     await saveRow("projects", {
-      client_id: data.get("client_id"),
+      client_id: clientId,
       name: String(data.get("name")).trim(),
       description: clean(data.get("description")),
       start_date: clean(data.get("start_date")),
@@ -2039,7 +2041,14 @@
       case "add-client": clientForm(); break;
       case "edit-client": closeSearchForRecord(); clientForm(byId(state.clients, id)); break;
       case "delete-client": await deleteRecord("client", id); break;
-      case "add-project": projectForm(null, button.dataset.clientId || ""); break;
+      case "add-project":
+        if (!state.clients.some((client) => client.is_active)) {
+          toast("Add an active client before creating a project.", "info");
+          clientForm();
+        } else {
+          projectForm(null, button.dataset.clientId || "");
+        }
+        break;
       case "edit-project": projectForm(byId(state.projects, id)); break;
       case "delete-project": await deleteRecord("project", id); break;
       case "add-category": categoryForm(); break;
@@ -2123,11 +2132,29 @@
     form.reset();
     toast("Admin password updated. Other sessions were signed out.");
   }
+  function togglePasswordVisibility(button) {
+    const input = $("input", button.closest(".password-input-wrap"));
+    if (!input) return;
+    const showPassword = input.type === "password";
+    input.type = showPassword ? "text" : "password";
+    const actionLabel = showPassword ? "Hide password" : "Show password";
+    button.setAttribute("aria-label", actionLabel);
+    button.setAttribute("aria-pressed", String(showPassword));
+    button.title = actionLabel;
+    input.focus({ preventScroll: true });
+  }
+
   function bindGlobalEvents() {
     window.addEventListener("hashchange", () => {
       if (state.user) renderRoute();
     });
     document.addEventListener("click", async (event) => {
+      const passwordToggle = event.target.closest("[data-password-toggle]");
+      if (passwordToggle) {
+        event.preventDefault();
+        togglePasswordVisibility(passwordToggle);
+        return;
+      }
       const actionButton = event.target.closest("[data-action]");
       if (actionButton) {
         event.preventDefault();

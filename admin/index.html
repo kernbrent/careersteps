@@ -29,7 +29,21 @@
       <h1>Welcome back.</h1>
       <p>Sign in to manage business income, expenses, mileage, clients, and CPA-ready reports.</p>
       <form class="auth-form" id="login-form">
-        <label>Password<input type="password" name="password" autocomplete="current-password" required autofocus></label>
+        <div class="auth-password-field">
+          <label for="login-password">Password</label>
+          <div class="password-input-wrap">
+            <input id="login-password" type="password" name="password" autocomplete="current-password" required autofocus>
+            <button class="password-visibility-button" type="button" data-password-toggle aria-label="Show password" aria-pressed="false" title="Show password">
+              <svg class="icon-eye" aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+                <circle cx="12" cy="12" r="2.75"></circle>
+              </svg>
+              <svg class="icon-eye-off" aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M4.1 7.7C2.9 9 2.5 10 2.5 10s3.5 6 9.5 6c1.3 0 2.5-.3 3.5-.7M8.2 6.6C9.3 6.2 10.6 6 12 6c6 0 9.5 6 9.5 6s-.9 1.6-2.6 3.1M9.9 9.9A2.8 2.8 0 0 0 14.1 14.1M3 3l18 18"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
         <label class="remember-option"><input type="checkbox" name="remember_me"> Keep me signed in on this private device</label>
         <p class="form-message" id="auth-message" aria-live="polite"></p>
         <button class="button button-wide" type="submit">Sign in securely</button>
@@ -58,7 +72,7 @@
         <a href="#/expenses" data-route="expenses"><span class="nav-mark">E</span>Expenses</a>
         <a href="#/income" data-route="income"><span class="nav-mark">I</span>Income</a>
         <a href="#/mileage" data-route="mileage"><span class="nav-mark">M</span>Mileage</a>
-        <a href="#/clients" data-route="clients"><span class="nav-mark">C</span>Clients</a>
+        <a href="#/clients" data-route="clients"><span class="nav-mark">C</span>Clients &amp; Projects</a>
         <a href="#/reports" data-route="reports"><span class="nav-mark">R</span>Reports</a>
         <a href="#/settings" data-route="settings"><span class="nav-mark">S</span>Settings</a>
       </nav>

@@ -111,6 +111,31 @@ a { color: var(--blue); }
 .auth-form input:focus { outline: 3px solid rgba(23,105,154,.16); border-color: var(--blue-bright); }
 .auth-form .remember-option { display: flex; align-items: center; gap: .6rem; font-weight: 600; color: var(--muted); }
 .auth-form .remember-option input { width: 1rem; min-height: 1rem; margin: 0; accent-color: var(--blue-bright); }
+.auth-password-field { display: grid; gap: .4rem; }
+.password-input-wrap { position: relative; min-width: 0; }
+.password-input-wrap input { width: 100%; padding-right: 3rem; }
+.password-visibility-button {
+  position: absolute;
+  top: 50%;
+  right: .35rem;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  min-height: 2.25rem;
+  padding: 0;
+  color: var(--blue);
+  background: transparent;
+  border: 0;
+  border-radius: .5rem;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+.password-visibility-button:hover { background: #edf4f7; }
+.password-visibility-button:focus-visible { outline: 3px solid rgba(23,105,154,.22); outline-offset: 1px; }
+.password-visibility-button svg { width: 1.3rem; height: 1.3rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; pointer-events: none; }
+.password-visibility-button .icon-eye-off { display: none; }
+.password-visibility-button[aria-pressed="true"] .icon-eye { display: none; }
+.password-visibility-button[aria-pressed="true"] .icon-eye-off { display: block; }
 .text-button { justify-self: center; padding: .2rem; color: var(--blue); background: none; border: 0; text-decoration: underline; }
 .form-message { min-height: 1.2rem; margin: 0; color: var(--red); font-size: .82rem; }
 .toast-region { position: fixed; right: 1rem; bottom: 1rem; z-index: 1000; display: grid; gap: .5rem; }

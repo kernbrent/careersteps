@@ -32,6 +32,7 @@ type JsonRecord = Record<string, unknown>;
 type NormalizedRecord = Record<string, string | number | null>;
 
 type ProjectRow = { client_id: string };
+type ClientRow = { id: string };
 type ExistingRelationshipRow = { client_id: string | null; project_id: string | null };
 
 export function recordTable(value: string): RecordTable | null {
@@ -260,6 +261,14 @@ async function validateProjectRelationship(
   id: string | null,
   payload: NormalizedRecord,
 ): Promise<void> {
+  if (table === "projects") {
+    const clientId = payload.client_id as string | null | undefined;
+    if (clientId === undefined && id) return;
+    if (!clientId) throw new AdminError(422, "INVALID_RECORD", "Choose a client before saving the project.");
+    const client = await env.DB.prepare("SELECT id FROM clients WHERE id = ?1").bind(clientId).first<ClientRow>();
+    if (!client) throw new AdminError(422, "INVALID_RECORD", "The selected client no longer exists.");
+    return;
+  }
   if (!(["expenses", "income", "mileage_entries"] as RecordTable[]).includes(table)) return;
   let clientId = payload.client_id as string | null | undefined;
   let projectId = payload.project_id as string | null | undefined;

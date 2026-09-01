@@ -32,6 +32,21 @@ describe("bookkeeping record validation", () => {
     expect(payload.created_at).toBeUndefined();
   });
 
+  it("allows clients without projects but requires a client reference for projects", () => {
+    const client = normalizeRecordPayload("clients", {
+      name: "Standalone Client",
+      is_active: true,
+    });
+    expect(client.name).toBe("Standalone Client");
+    expect(client.project_id).toBeUndefined();
+
+    expect(() => normalizeRecordPayload("projects", {
+      client_id: null,
+      name: "Orphan Project",
+      is_active: true,
+    })).toThrow(/client_id is invalid/i);
+  });
+
   it("rejects invalid dates, amounts, statuses, and colors", () => {
     expect(() => normalizeRecordPayload("mileage_entries", { mileage_date: "2026-02-30" })).toThrow(/valid date/i);
     expect(() => normalizeRecordPayload("income", { amount: -1 })).toThrow(/allowed range/i);
