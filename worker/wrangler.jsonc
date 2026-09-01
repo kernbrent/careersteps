@@ -1,0 +1,57 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "careersteps-admin-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "admin-api.careersteps.net",
+      "custom_domain": true
+    }
+  ],  "vars": {
+    "ALLOWED_ORIGINS": "https://careersteps.net,https://www.careersteps.net",
+    "DISPLAY_TIME_ZONE": "America/Chicago"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "careersteps-admin",
+      "database_id": "46769d66-df65-4566-9ef7-00d26859c50b",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "ATTACHMENTS",
+      "bucket_name": "careersteps-attachments-production"
+    }
+  ],
+  "secrets": {
+    "required": [
+      "ADMIN_PASSWORD",
+      "ADMIN_SESSION_SECRET"
+    ]
+  },
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "head_sampling_rate": 1
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 0.05
+    }
+  },
+  "assets": {
+    "directory": "./public",
+    "run_worker_first": [
+      "/api/admin/*"
+    ],
+    "html_handling": "auto-trailing-slash"
+  }
+}

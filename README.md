@@ -4,39 +4,26 @@ Static website for [careersteps.net](https://careersteps.net).
 
 ## Project structure
 
-- `index.html` — home page
-- `about/`, `services/`, `contact/` — site pages
-- `assets/css/` — shared styles
-- `assets/js/` — shared scripts
-- `assets/images/` — site images
-- `includes/` — reserved for reusable source fragments
-- `admin/` — private bookkeeping portal frontend
-- `supabase/` — database, access-control, and private attachment setup
+- `index.html` - home page
+- `about/`, `services/`, `contact/` - public site pages
+- `assets/` - shared public styles, scripts, and images
+- `admin/` - private bookkeeping portal frontend
+- `worker/` - Cloudflare Worker API, D1 migrations, R2 integration, and tests
 
 ## Local development
 
-Open the repository folder in Visual Studio Code, then open `index.html` with Live Server. All navigation uses relative links so the site works locally and on GitHub Pages.
-
-## Workflow
-
-Work and test locally using Live Server. Commit changes to `main` locally, then push to GitHub only when the site is ready for production.
+Open the repository folder in Visual Studio Code, then open `index.html` with Live Server. The `/admin/` page uses temporary sample data on `localhost` by default. Add `?live=1` when serving the admin assets through the local Worker to test authenticated API access.
 
 ## Admin portal
 
-The admin portal is served from `/admin/` and is designed to stay compatible
-with the site's existing GitHub Pages hosting. Bookkeeping records and
-attachments are not stored in this repository or in browser storage. They use a
-dedicated Supabase project with:
+The `/admin/` frontend remains on the existing GitHub Pages deployment. It connects to the `careersteps-admin-api` Worker at `admin-api.careersteps.net`, which is a dedicated same-site Cloudflare custom domain.
 
-- email/password authentication and an explicit admin allowlist;
-- row-level security on every bookkeeping table;
-- a private attachment bucket with per-user paths and short-lived viewing URLs;
-- relational ledgers for expenses, income and partial payments, mileage,
-  clients, projects, categories, and CPA review items.
+Bookkeeping records and attachments are never stored in this repository or browser storage. The private portal uses:
 
-See [supabase/README.md](supabase/README.md) for the one-time configuration.
+- a dedicated Cloudflare D1 database for expenses, income, partial payments, mileage, clients, projects, settings, sessions, and audit events;
+- a dedicated private R2 bucket for receipt and income attachments;
+- a strong password stored only as an encrypted Worker secret, with PBKDF2 password changes stored as salted hashes in D1;
+- secure HTTP-only cookies, strict same-site scope, CSRF checks, origin validation, login rate limiting, session expiration, and security audit events;
+- authenticated, server-validated API endpoints for every read and change.
 
-When the Supabase placeholders have not been configured, production displays a
-setup notice. A local server on `localhost` or `127.0.0.1` displays a
-temporary sample-data preview so the interface can be reviewed without using
-real financial information.
+See [worker/README.md](worker/README.md) for validation, migration, deployment, and backup operations.

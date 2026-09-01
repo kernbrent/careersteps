@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow, noarchive">
   <meta name="referrer" content="no-referrer">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: blob: https://*.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://admin-api.careersteps.net; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'">
   <title>Admin | Career Steps Consulting</title>
   <meta name="description" content="Private bookkeeping and reporting for Career Steps Consulting.">
   <link rel="icon" type="image/png" href="../assets/images/career-steps-logo.png">
@@ -29,11 +29,10 @@
       <h1>Welcome back.</h1>
       <p>Sign in to manage business income, expenses, mileage, clients, and CPA-ready reports.</p>
       <form class="auth-form" id="login-form">
-        <label>Email address<input type="email" name="email" autocomplete="username" required></label>
-        <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+        <label>Password<input type="password" name="password" autocomplete="current-password" required autofocus></label>
+        <label class="remember-option"><input type="checkbox" name="remember_me"> Keep me signed in on this private device</label>
         <p class="form-message" id="auth-message" aria-live="polite"></p>
         <button class="button button-wide" type="submit">Sign in securely</button>
-        <button class="text-button" type="button" id="forgot-password">Forgot password?</button>
       </form>
     </div>
   </section>
@@ -41,9 +40,9 @@
   <section class="setup-view" id="setup-view" hidden>
     <div class="setup-card">
       <img src="../assets/images/career-steps-logo.png" alt="Career Steps Consulting">
-      <p class="eyebrow">One-time setup</p>
-      <h1>Connect the private bookkeeping database.</h1>
-      <p>The admin portal is installed, but its secure Supabase connection has not been configured yet. Follow the repository setup guide to create the database, private attachment bucket, and first authorized admin.</p>
+      <p class="eyebrow">Temporarily unavailable</p>
+      <h1>The private bookkeeping service could not be reached.</h1>
+      <p>No bookkeeping information is exposed. Please try again shortly or return to the public Career Steps site.</p>
       <a class="button" href="../">Return to the public site</a>
     </div>
   </section>
@@ -128,7 +127,7 @@
   <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-dialog-title"></dialog>
   <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>

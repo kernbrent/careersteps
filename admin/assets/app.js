@@ -2,13 +2,10 @@
 
 (() => {
   const CONFIG = window.CAREERSTEPS_ADMIN_CONFIG || {};
-  const CONFIGURED =
-    /^https:\/\/[^/]+\.supabase\.co\/?$/i.test(CONFIG.supabaseUrl || "") &&
-    CONFIG.supabasePublishableKey &&
-    !String(CONFIG.supabasePublishableKey).startsWith("YOUR_");
+  const API_BASE = String(CONFIG.apiBase || "/api/admin").replace(/\/$/, "");
   const LOCAL_DEMO =
-    !CONFIGURED &&
-    (location.hostname === "127.0.0.1" || location.hostname === "localhost");
+    (location.hostname === "127.0.0.1" || location.hostname === "localhost") &&
+    new URLSearchParams(location.search).get("live") !== "1";
   const TABLE_KEYS = [
     "categories",
     "clients",
@@ -56,6 +53,7 @@
   const state = {
     user: null,
     session: null,
+    csrfToken: null,
     demo: LOCAL_DEMO,
     settings: null,
     categories: [],
@@ -68,7 +66,6 @@
     attachments: [],
     reportFilters: null,
   };
-  let client = null;
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -140,14 +137,14 @@
   }
 
   function friendlyError(error, fallback = "That action could not be completed.") {
-    if (error?.code === "23503") {
+    if (error?.code === "RECORD_IN_USE") {
       return "This item is linked to bookkeeping records. Keep it and mark it inactive instead of deleting it.";
     }
-    if (error?.code === "23505") {
+    if (error?.code === "DUPLICATE_RECORD") {
       return "A record with that unique name or number already exists.";
     }
-    if (error?.code === "42501") {
-      return "Your account does not have permission to make this change.";
+    if (error?.code === "AUTH_REQUIRED" || error?.code === "SESSION_EXPIRED") {
+      return "Your secure session expired. Sign in again.";
     }
     return error?.message || fallback;
   }
@@ -220,42 +217,46 @@
     ];
   }
 
-  async function ensureDefaults() {
-    const settingsResult = await client.from("app_settings").select("*").eq("owner_id", state.user.id).maybeSingle();
-    if (settingsResult.error) throw settingsResult.error;
-    if (!settingsResult.data) {
-      const payload = ownerPayload({
-        business_name: "Career Steps Consulting LLC",
-        default_tax_year: currentYear(),
-        currency_code: "USD",
-        mileage_rate: 0,
-        contact_email: state.user.email,
-      });
-      const created = await client.from("app_settings").insert(payload).select().single();
-      if (created.error) throw created.error;
+  async function apiRequest(path, { method = "GET", body, headers = {} } = {}) {
+    const requestHeaders = new Headers(headers);
+    requestHeaders.set("Accept", "application/json");
+    const options = { method, credentials: "include", headers: requestHeaders };
+    if (body !== undefined) {
+      if (body instanceof Blob) {
+        options.body = body;
+      } else {
+        requestHeaders.set("Content-Type", "application/json");
+        options.body = JSON.stringify(body);
+      }
     }
-    const categoriesResult = await client.from("categories").select("id").eq("owner_id", state.user.id).limit(1);
-    if (categoriesResult.error) throw categoriesResult.error;
-    if (!categoriesResult.data.length) {
-      const rows = DEFAULT_CATEGORIES.map(([name, tax_line, color], index) =>
-        ownerPayload({ name, tax_line, color, is_active: true, sort_order: index })
-      );
-      const inserted = await client.from("categories").insert(rows);
-      if (inserted.error) throw inserted.error;
+    if (!["GET", "HEAD", "OPTIONS"].includes(method) && state.csrfToken) {
+      requestHeaders.set("X-CSRF-Token", state.csrfToken);
     }
+    const response = await fetch(`${API_BASE}${path}`, options);
+    const contentType = response.headers.get("content-type") || "";
+    const payload = contentType.includes("application/json")
+      ? await response.json()
+      : { error: response.statusText || "The request could not be completed." };
+    if (!response.ok) {
+      const error = new Error(payload.error || "The request could not be completed.");
+      error.code = payload.code || "REQUEST_FAILED";
+      error.status = response.status;
+      if (response.status === 401 && path !== "/login") {
+        state.user = null;
+        state.session = null;
+        state.csrfToken = null;
+        showOnly("auth-view");
+      }
+      throw error;
+    }
+    return payload;
   }
 
   async function loadData() {
-    const settingsQuery = client.from("app_settings").select("*").eq("owner_id", state.user.id).single();
-    const queries = TABLE_KEYS.map((table) =>
-      client.from(table).select("*").eq("owner_id", state.user.id)
-    );
-    const [settingsResult, ...results] = await Promise.all([settingsQuery, ...queries]);
-    if (settingsResult.error) throw settingsResult.error;
-    state.settings = settingsResult.data;
-    results.forEach((result, index) => {
-      if (result.error) throw result.error;
-      state[TABLE_KEYS[index]] = result.data || [];
+    const data = await apiRequest("/data");
+    state.settings = data.settings;
+    TABLE_KEYS.forEach((table) => {
+      state[table] = data[table] || [];
     });
     state.expenses.sort((a, b) => b.expense_date.localeCompare(a.expense_date));
     state.income.sort((a, b) => b.income_date.localeCompare(a.income_date));
@@ -275,12 +276,11 @@
       collection.push(row);
       return row;
     }
-    const query = id
-      ? client.from(table).update(payload).eq("id", id).eq("owner_id", state.user.id)
-      : client.from(table).insert(ownerPayload(payload));
-    const result = await query.select().single();
-    if (result.error) throw result.error;
-    return result.data;
+    const result = await apiRequest(
+      id ? `/records/${table}/${encodeURIComponent(id)}` : `/records/${table}`,
+      { method: id ? "PATCH" : "POST", body: payload }
+    );
+    return result.record;
   }
 
   async function deleteRow(table, id) {
@@ -288,25 +288,23 @@
       state[table] = state[table].filter((item) => item.id !== id);
       return;
     }
-    const result = await client.from(table).delete().eq("id", id).eq("owner_id", state.user.id);
-    if (result.error) throw result.error;
+    await apiRequest(`/records/${table}/${encodeURIComponent(id)}`, { method: "DELETE" });
   }
 
   async function establishSession(session) {
     state.session = session;
-    state.user = session.user;
+    state.csrfToken = session.csrfToken;
+    state.user = { id: "primary", email: "Career Steps Administrator" };
     showOnly("loading-view");
     try {
-      await ensureDefaults();
       await loadData();
+      state.user.email = state.settings.contact_email || "Career Steps Administrator";
       showApp();
     } catch (error) {
       console.error(error);
-      const denied = error.code === "42501" || /policy|permission|admin/i.test(error.message || "");
+      if (error.status === 401) return;
       showOnly("auth-view");
-      $("#auth-message").textContent = denied
-        ? "This account is signed in but has not been authorized for Career Steps bookkeeping."
-        : "The bookkeeping database could not be opened. Please try again.";
+      $("#auth-message").textContent = "The bookkeeping database could not be opened. Please try again.";
     }
   }
 
@@ -317,30 +315,18 @@
       showApp();
       return;
     }
-    if (!CONFIGURED || !window.supabase?.createClient) {
-      showOnly("setup-view");
-      return;
-    }
-    client = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabasePublishableKey, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: "pkce" },
-    });
-    client.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_OUT") {
-        state.session = null;
-        state.user = null;
+    try {
+      const session = await apiRequest("/session");
+      await establishSession(session);
+    } catch (error) {
+      if (error.status === 401) {
         showOnly("auth-view");
-      } else if (event === "PASSWORD_RECOVERY" && session) {
-        state.session = session;
-        state.user = session.user;
-        window.setTimeout(showPasswordRecovery, 0);
-      } else if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
-        window.setTimeout(() => establishSession(session), 0);
-      } else if (event === "INITIAL_SESSION" && !session) {
-        showOnly("auth-view");
+        return;
       }
-    });
+      console.error(error);
+      showOnly("setup-view");
+    }
   }
-
   function showApp() {
     showOnly("admin-shell");
     $("[data-active-tax-year]").textContent = taxYear();
@@ -1293,13 +1279,20 @@
           <section class="panel security-panel">
             <div class="panel-heading"><div><p class="section-kicker">Security</p><h2>Private by design</h2></div></div>
             <ul class="security-list">
-              <li><strong>Signed in as</strong><span>${escapeHtml(state.user.email || "Local preview")}</span></li>
-              <li><strong>Database access</strong><span>Authorized users only</span></li>
-              <li><strong>Record isolation</strong><span>Row-level security</span></li>
-              <li><strong>Attachments</strong><span>Private bucket with short-lived links</span></li>
+              <li><strong>Signed in as</strong><span>${escapeHtml(state.user.email || "Career Steps Administrator")}</span></li>
+              <li><strong>Database access</strong><span>Private Cloudflare D1 through the authenticated API</span></li>
+              <li><strong>Session protection</strong><span>Secure HTTP-only cookie, CSRF checks, and rate limiting</span></li>
+              <li><strong>Attachments</strong><span>Private Cloudflare R2 bucket</span></li>
             </ul>
-            <p class="security-note">For maximum protection, enable multi-factor authentication in Supabase and set <code>mfa_required</code> for the authorized admin account.</p>
-            ${state.demo ? '<p class="demo-note">This local preview uses temporary in-memory sample data only.</p>' : ""}
+            ${state.demo
+              ? '<p class="demo-note">This local preview uses temporary in-memory sample data only.</p>'
+              : `<form class="record-form settings-form password-form" data-form="password">
+                  <label class="field field-wide">Current password<input name="current_password" type="password" autocomplete="current-password" required></label>
+                  <label class="field">New password<input name="new_password" type="password" minlength="12" maxlength="128" autocomplete="new-password" required></label>
+                  <label class="field">Confirm new password<input name="confirm_password" type="password" minlength="12" maxlength="128" autocomplete="new-password" required></label>
+                  <p class="security-note field-wide">Use at least 12 characters and at least three of: uppercase letters, lowercase letters, numbers, and symbols.</p>
+                  <div class="form-footer field-wide"><button class="button" type="submit">Change password</button></div>
+                </form>`}
           </section>
         </div>
         <section class="panel categories-panel">
@@ -1714,33 +1707,33 @@
     const validFiles = [...files].filter((file) => file.size > 0);
     for (const file of validFiles) {
       if (file.size > 15728640) throw new Error(`${file.name} is larger than 15 MB.`);
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(-120);
-      const path = `${state.user.id}/${type}/${recordId}/${uid()}-${safeName}`;
-      const metadata = ownerPayload({
-        record_type: type,
-        expense_id: type === "expense" ? recordId : null,
-        income_id: type === "income" ? recordId : null,
-        storage_path: path,
-        file_name: file.name,
-        mime_type: file.type || null,
-        size_bytes: file.size,
-      });
       if (state.demo) {
-        state.attachments.push({ id: uid(), ...metadata, created_at: new Date().toISOString() });
+        state.attachments.push({
+          id: uid(),
+          owner_id: state.user.id,
+          record_type: type,
+          expense_id: type === "expense" ? recordId : null,
+          income_id: type === "income" ? recordId : null,
+          file_name: file.name,
+          mime_type: file.type || null,
+          size_bytes: file.size,
+          created_at: new Date().toISOString(),
+        });
         continue;
       }
-      const uploaded = await client.storage
-        .from(CONFIG.storageBucket || "bookkeeping-attachments")
-        .upload(path, file, { upsert: false, cacheControl: "3600", contentType: file.type || undefined });
-      if (uploaded.error) throw uploaded.error;
-      const inserted = await client.from("attachments").insert(metadata).select().single();
-      if (inserted.error) {
-        await client.storage.from(CONFIG.storageBucket || "bookkeeping-attachments").remove([path]);
-        throw inserted.error;
-      }
+      await apiRequest(
+        `/attachments?recordType=${encodeURIComponent(type)}&recordId=${encodeURIComponent(recordId)}`,
+        {
+          method: "POST",
+          body: file,
+          headers: {
+            "Content-Type": file.type || "application/octet-stream",
+            "X-File-Name": encodeURIComponent(file.name),
+          },
+        }
+      );
     }
   }
-
   async function refreshAfterSave(message) {
     if (!state.demo) await loadData();
     state.expenses.sort((a, b) => b.expense_date.localeCompare(a.expense_date));
@@ -1937,9 +1930,8 @@
     if (state.demo) {
       state.settings = { ...state.settings, ...payload, updated_at: new Date().toISOString() };
     } else {
-      const result = await client.from("app_settings").update(payload).eq("owner_id", state.user.id).select().single();
-      if (result.error) throw result.error;
-      state.settings = result.data;
+      const result = await apiRequest("/settings", { method: "PATCH", body: payload });
+      state.settings = result.settings;
     }
     $("[data-active-tax-year]").textContent = taxYear();
     toast("Settings saved.");
@@ -1953,12 +1945,8 @@
     if (state.demo) {
       state.attachments = state.attachments.filter((attachment) => attachment.id !== id);
     } else {
-      const removed = await client.storage
-        .from(CONFIG.storageBucket || "bookkeeping-attachments")
-        .remove([item.storage_path]);
-      if (removed.error) throw removed.error;
-      const deleted = await client.from("attachments").delete().eq("id", id).eq("owner_id", state.user.id);
-      if (deleted.error) throw deleted.error;
+      await apiRequest(`/attachments/${encodeURIComponent(id)}`, { method: "DELETE" });
+      await loadData();
     }
     toast("Attachment removed.");
     $("#record-dialog").close();
@@ -1972,30 +1960,16 @@
       toast("Sample attachments are not stored in the local preview.", "info");
       return;
     }
-    const signed = await client.storage
-      .from(CONFIG.storageBucket || "bookkeeping-attachments")
-      .createSignedUrl(item.storage_path, 60);
-    if (signed.error) throw signed.error;
-    window.open(signed.data.signedUrl, "_blank", "noopener,noreferrer");
+    window.open(`${API_BASE}/attachments/${encodeURIComponent(id)}`, "_blank", "noopener,noreferrer");
   }
-
   async function deleteRecord(type, id) {
     const labels = { expense: "expense", income: "income record and its payments", mileage: "mileage entry", client: "client and its projects", project: "project" };
     if (!window.confirm(`Delete this ${labels[type]}? This cannot be undone.`)) return;
-    if (type === "expense" || type === "income") {
-      const files = attachmentsFor(type, id);
-      if (!state.demo && files.length) {
-        const removed = await client.storage
-          .from(CONFIG.storageBucket || "bookkeeping-attachments")
-          .remove(files.map((item) => item.storage_path));
-        if (removed.error) throw removed.error;
-      }
-      if (state.demo) {
-        const key = `${type}_id`;
-        state.attachments = state.attachments.filter((item) => item[key] !== id);
-        if (type === "income") {
-          state.income_payments = state.income_payments.filter((payment) => payment.income_id !== id);
-        }
+    if ((type === "expense" || type === "income") && state.demo) {
+      const key = `${type}_id`;
+      state.attachments = state.attachments.filter((item) => item[key] !== id);
+      if (type === "income") {
+        state.income_payments = state.income_payments.filter((payment) => payment.income_id !== id);
       }
     }
     const table = { expense: "expenses", income: "income", mileage: "mileage_entries", client: "clients", project: "projects" }[type];
@@ -2095,6 +2069,7 @@
       payment: savePayment,
       category: saveCategory,
       settings: saveSettings,
+      password: savePassword,
     };
     const handler = handlers[form.dataset.form];
     if (!handler) return;
@@ -2108,56 +2083,46 @@
     }
   }
 
-  function showPasswordRecovery() {
-    showOnly("auth-view");
-    const card = $(".auth-card");
-    card.innerHTML = `
-      <p class="eyebrow">Password recovery</p>
-      <h1>Choose a new password.</h1>
-      <p>Use at least 12 characters and avoid a password used on another site.</p>
-      <form class="auth-form" id="recovery-form">
-        <label>New password<input type="password" name="password" minlength="12" autocomplete="new-password" required></label>
-        <label>Confirm password<input type="password" name="confirm_password" minlength="12" autocomplete="new-password" required></label>
-        <p class="form-message" id="recovery-message" aria-live="polite"></p>
-        <button class="button button-wide" type="submit">Update password</button>
-      </form>`;
-  }
-
   async function handleLogin(form) {
     const data = new FormData(form);
     const message = $("#auth-message");
     message.textContent = "";
     setBusy(form, true, "Signing in...");
-    const result = await client.auth.signInWithPassword({
-      email: String(data.get("email")).trim(),
-      password: String(data.get("password")),
-    });
-    if (result.error) {
-      message.textContent = result.error.message;
+    try {
+      const session = await apiRequest("/login", {
+        method: "POST",
+        body: {
+          password: String(data.get("password")),
+          rememberMe: form.elements.remember_me.checked,
+        },
+      });
+      await establishSession(session);
+    } catch (error) {
+      message.textContent = friendlyError(error, "Sign-in failed.");
       setBusy(form, false);
     }
   }
 
-  async function handleRecovery(form) {
+  async function savePassword(form) {
+    if (state.demo) {
+      toast("Password changes are disabled in the local preview.", "info");
+      return;
+    }
     const data = new FormData(form);
-    const password = String(data.get("password"));
+    const newPassword = String(data.get("new_password"));
     const confirmPassword = String(data.get("confirm_password"));
-    const message = $("#recovery-message");
-    if (password !== confirmPassword) {
-      message.textContent = "The passwords do not match.";
-      return;
-    }
-    setBusy(form, true, "Updating...");
-    const result = await client.auth.updateUser({ password });
-    if (result.error) {
-      message.textContent = result.error.message;
-      setBusy(form, false);
-      return;
-    }
-    toast("Password updated.");
-    location.reload();
+    if (newPassword !== confirmPassword) throw new Error("The new passwords do not match.");
+    await apiRequest("/password", {
+      method: "POST",
+      body: {
+        currentPassword: String(data.get("current_password")),
+        newPassword,
+        confirmPassword,
+      },
+    });
+    form.reset();
+    toast("Admin password updated. Other sessions were signed out.");
   }
-
   function bindGlobalEvents() {
     window.addEventListener("hashchange", () => {
       if (state.user) renderRoute();
@@ -2178,8 +2143,6 @@
       event.preventDefault();
       if (event.target.id === "login-form") {
         await handleLogin(event.target);
-      } else if (event.target.id === "recovery-form") {
-        await handleRecovery(event.target);
       } else {
         await handleForm(event.target);
       }
@@ -2216,21 +2179,17 @@
     $("#sign-out").addEventListener("click", async () => {
       if (state.demo) {
         toast("The local preview does not have an active sign-in.", "info");
-      } else {
-        await client.auth.signOut();
-      }
-    });
-    $("#forgot-password").addEventListener("click", async () => {
-      const email = String($("#login-form").elements.email.value || "").trim();
-      if (!email) {
-        $("#auth-message").textContent = "Enter your email address first.";
         return;
       }
-      const redirectTo = `${location.origin}${location.pathname}`;
-      const result = await client.auth.resetPasswordForEmail(email, { redirectTo });
-      $("#auth-message").textContent = result.error
-        ? result.error.message
-        : "Check your email for a secure password-reset link.";
+      try {
+        await apiRequest("/logout", { method: "POST" });
+      } finally {
+        state.user = null;
+        state.session = null;
+        state.csrfToken = null;
+        showOnly("auth-view");
+        $("#auth-message").textContent = "You have been signed out.";
+      }
     });
     $("#record-dialog").addEventListener("click", (event) => {
       if (event.target === $("#record-dialog")) $("#record-dialog").close();
@@ -2242,7 +2201,6 @@
 
   init().catch((error) => {
     console.error(error);
-    showOnly(CONFIGURED ? "auth-view" : "setup-view");
-    if (CONFIGURED) $("#auth-message").textContent = "The admin portal could not be opened.";
+    showOnly("setup-view");
   });
 })();

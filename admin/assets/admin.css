@@ -109,6 +109,8 @@ a { color: var(--blue); }
 .auth-form label { display: grid; gap: .4rem; color: var(--ink); font-size: .82rem; font-weight: 700; }
 .auth-form input { min-height: 2.9rem; padding: .65rem .8rem; color: var(--text); background: #fff; border: 1px solid #bfcbd1; border-radius: .65rem; }
 .auth-form input:focus { outline: 3px solid rgba(23,105,154,.16); border-color: var(--blue-bright); }
+.auth-form .remember-option { display: flex; align-items: center; gap: .6rem; font-weight: 600; color: var(--muted); }
+.auth-form .remember-option input { width: 1rem; min-height: 1rem; margin: 0; accent-color: var(--blue-bright); }
 .text-button { justify-self: center; padding: .2rem; color: var(--blue); background: none; border: 0; text-decoration: underline; }
 .form-message { min-height: 1.2rem; margin: 0; color: var(--red); font-size: .82rem; }
 .toast-region { position: fixed; right: 1rem; bottom: 1rem; z-index: 1000; display: grid; gap: .5rem; }
