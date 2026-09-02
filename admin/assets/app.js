@@ -11,6 +11,7 @@
     "clients",
     "projects",
     "trip_templates",
+    "mileage_rates",
     "expenses",
     "income",
     "income_payments",
@@ -61,6 +62,7 @@
     clients: [],
     projects: [],
     trip_templates: [],
+    mileage_rates: [],
     expenses: [],
     income: [],
     income_payments: [],
@@ -121,6 +123,23 @@
   const taxYear = () => state.settings?.default_tax_year || currentYear();
   const yearStart = (year = taxYear()) => `${year}-01-01`;
   const yearEnd = (year = taxYear()) => `${year}-12-31`;
+  const mileageRates = () =>
+    state.mileage_rates
+      .filter((item) => Boolean(item.is_active))
+      .sort((a, b) => a.effective_from.localeCompare(b.effective_from));
+  const mileageRateForDate = (date) =>
+    mileageRates().find((item) => item.effective_from <= date && item.effective_to >= date) || null;
+  const mileageDeductionFor = (item) => {
+    const rate = mileageRateForDate(item.mileage_date);
+    return rate ? num(item.miles) * num(rate.rate_per_mile) : 0;
+  };
+  const mileageTotals = (items) => ({
+    miles: items.reduce((sum, item) => sum + num(item.miles), 0),
+    deduction: items.reduce((sum, item) => sum + mileageDeductionFor(item), 0),
+    missingRateCount: items.filter((item) => !mileageRateForDate(item.mileage_date)).length,
+  });
+  const rateDisplay = (value) =>
+    `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 3 }).format(num(value) * 100)}¢/mi`;
 
   function showOnly(id) {
     ["loading-view", "auth-view", "setup-view", "admin-shell"].forEach((viewId) => {
@@ -144,6 +163,9 @@
     }
     if (error?.code === "DUPLICATE_RECORD") {
       return "A record with that unique name or number already exists.";
+    }
+    if (error?.code === "MILEAGE_RATE_OVERLAP") {
+      return "This date range overlaps another active mileage rate. Adjust one of the date ranges and try again.";
     }
     if (error?.code === "AUTH_REQUIRED" || error?.code === "SESSION_EXPIRED") {
       return "Your secure session expired. Sign in again.";
@@ -201,6 +223,11 @@
       client_id: clientA.id, project_id: projectA.id, notes: "Round trip", is_active: true,
       created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
     }];
+    const rateStamp = new Date().toISOString();
+    state.mileage_rates = [
+      { id: uid(), owner_id: owner, effective_from: "2026-01-01", effective_to: "2026-06-30", rate_per_mile: 0.725, label: "IRS business rate - Jan through Jun 2026", is_active: true, created_at: rateStamp, updated_at: rateStamp },
+      { id: uid(), owner_id: owner, effective_from: "2026-07-01", effective_to: "2026-12-31", rate_per_mile: 0.76, label: "IRS business rate - Jul through Dec 2026", is_active: true, created_at: rateStamp, updated_at: rateStamp },
+    ];
     state.expenses = [
       { id: uid(), owner_id: owner, expense_date: demoDate(8, 21), vendor: "Delta Air Lines", amount: 486.2, category_id: state.categories.find((item) => item.name.includes("Airfare")).id, description: "Client travel", business_purpose: "Onsite leadership workshop", payment_method: "Business credit card", client_id: clientA.id, project_id: projectA.id, tax_year: currentYear(), reimbursable: false, reimbursed: false, deductibility_percent: 100, record_status: "included", cpa_review: false, cpa_notes: "", notes: "" },
       { id: uid(), owner_id: owner, expense_date: demoDate(8, 18), vendor: "The Yard Coffee", amount: 18.45, category_id: meal.id, description: "Coffee meeting", business_purpose: "Discovery conversation with prospective client", payment_method: "Business credit card", client_id: null, project_id: null, tax_year: currentYear(), reimbursable: false, reimbursed: false, deductibility_percent: 50, record_status: "needs_review", cpa_review: true, cpa_notes: "Confirm meal deductibility.", notes: "" },
@@ -461,7 +488,7 @@
       (sum, item) => sum + num(item.amount) * (num(item.deductibility_percent) / 100),
       0
     );
-    const miles = mileage.reduce((sum, item) => sum + num(item.miles), 0);
+    const mileageSummary = mileageTotals(mileage);
     const tollTotal = expenses
       .filter((item) => /toll/i.test(categoryName(item.category_id)))
       .reduce((sum, item) => sum + num(item.amount), 0);
@@ -506,7 +533,7 @@
           <article class="metric-card metric-income"><span>Income received</span><strong>${money(incomeTotal)}</strong><small>Year to date</small></article>
           <article class="metric-card metric-expense"><span>Included expenses</span><strong>${money(expenseTotal)}</strong><small>After deductibility %</small></article>
           <article class="metric-card metric-net"><span>Net business income</span><strong>${money(incomeTotal - expenseTotal)}</strong><small>Before mileage deduction</small></article>
-          <article class="metric-card metric-mileage"><span>Mileage &amp; tolls</span><strong>${miles.toFixed(1)} mi</strong><small>${money(tollTotal)} in tolls</small></article>
+          <article class="metric-card metric-mileage"><span>Mileage &amp; tolls</span><strong>${mileageSummary.miles.toFixed(1)} mi</strong><small>${money(mileageSummary.deduction)} estimated deduction · ${money(tollTotal)} tolls${mileageSummary.missingRateCount ? ` · ${mileageSummary.missingRateCount} ${mileageSummary.missingRateCount === 1 ? "trip" : "trips"} missing a rate` : ""}</small></article>
         </div>
         <div class="dashboard-grid">
           <section class="panel panel-wide">
@@ -590,10 +617,12 @@
   }
 
   function renderMileage() {
-    const total = state.mileage_entries
-      .filter((item) => item.tax_year === taxYear() && item.record_status === "included")
-      .reduce((sum, item) => sum + num(item.miles), 0);
+    const included = state.mileage_entries.filter(
+      (item) => item.tax_year === taxYear() && item.record_status === "included"
+    );
+    const total = mileageTotals(included);
     const rows = state.mileage_entries.map((item) => {
+      const rate = mileageRateForDate(item.mileage_date);
       const haystack = [item.mileage_date, item.origin, item.destination, item.business_purpose, clientName(item.client_id), projectName(item.project_id), item.notes].join(" ").toLowerCase();
       return `<tr data-search-row="${escapeHtml(haystack)}">
         <td>${shortDate(item.mileage_date)}</td>
@@ -601,17 +630,17 @@
         <td><strong>${escapeHtml(item.business_purpose)}</strong><small>${escapeHtml(item.notes || "")}</small></td>
         <td>${escapeHtml(clientName(item.client_id))}<small>${escapeHtml(projectName(item.project_id))}</small></td>
         <td>${statusBadge(item.record_status)}${item.cpa_review ? '<span class="mini-flag">CPA</span>' : ""}</td>
-        <td class="number"><strong>${num(item.miles).toFixed(1)} mi</strong></td>
+        <td class="number"><strong>${num(item.miles).toFixed(1)} mi</strong><small>${rate ? `${rateDisplay(rate.rate_per_mile)} · ${money(mileageDeductionFor(item))}` : "Rate missing"}</small></td>
         <td class="row-actions"><button type="button" data-action="edit-mileage" data-id="${item.id}">Edit</button><button type="button" data-action="delete-mileage" data-id="${item.id}">Delete</button></td>
       </tr>`;
     }).join("");
     return `
       <section class="view">
-        <div class="section-heading-row split-heading"><div><p class="section-kicker">Vehicle log</p><h2>Business mileage</h2><p>Document every trip with origin, destination, business purpose, client, and notes.</p></div><div class="standalone-metric"><span>${taxYear()} total</span><strong>${total.toFixed(1)} mi</strong><small>${money(total * num(state.settings?.mileage_rate))} at configured rate</small></div></div>
+        <div class="section-heading-row split-heading"><div><p class="section-kicker">Vehicle log</p><h2>Business mileage</h2><p>Document every trip with origin, destination, business purpose, client, and notes.</p></div><div class="standalone-metric"><span>${taxYear()} total</span><strong>${total.miles.toFixed(1)} mi</strong><small>${money(total.deduction)} estimated deduction${total.missingRateCount ? ` · ${total.missingRateCount} ${total.missingRateCount === 1 ? "trip" : "trips"} missing a rate` : ""}</small></div></div>
         ${pageToolbar("mileage", "Search route, purpose, client, or notes", "add-mileage", "Log mileage")}
         <div class="panel table-panel">${state.mileage_entries.length ? `
           <div class="table-wrap"><table class="data-table">
-            <thead><tr><th>Date</th><th>Route</th><th>Business purpose</th><th>Client / project</th><th>Status</th><th class="number">Miles</th><th><span class="sr-only">Actions</span></th></tr></thead>
+            <thead><tr><th>Date</th><th>Route</th><th>Business purpose</th><th>Client / project</th><th>Status</th><th class="number">Miles / deduction</th><th><span class="sr-only">Actions</span></th></tr></thead>
             <tbody>${rows}</tbody></table></div><p class="no-search-results" hidden>No mileage entries match this search.</p>`
           : emptyState("No mileage logged", "Add your first business trip to begin the mileage ledger.", "add-mileage", "Log mileage")}</div>
       </section>`;
@@ -821,7 +850,7 @@
       0
     );
     const incomeTotal = data.payments.reduce((sum, item) => sum + num(item.amount), 0);
-    const miles = data.mileage.reduce((sum, item) => sum + num(item.miles), 0);
+    const mileageSummary = mileageTotals(data.mileage);
     const missing = data.expenses.filter((item) => !attachmentsFor("expense", item.id).length).length;
     const expenseGroups = groupedTotals(
       data.expenses,
@@ -866,11 +895,12 @@
         date: item.mileage_date,
         type: "Mileage",
         party: `${item.origin} to ${item.destination}`,
-        detail: item.business_purpose,
+        detail: `${item.business_purpose} · ${mileageRateForDate(item.mileage_date) ? rateDisplay(mileageRateForDate(item.mileage_date).rate_per_mile) : "rate missing"}`,
         client: clientName(item.client_id),
         status: statusLabel(item.record_status),
         amount: null,
         miles: num(item.miles),
+        deduction: mileageDeductionFor(item),
       }));
     }
     transactionRows.sort((a, b) => b.date.localeCompare(a.date));
@@ -879,7 +909,7 @@
         <article><span>Income received</span><strong>${money(incomeTotal)}</strong></article>
         <article><span>Deductible expenses</span><strong>${money(expenseTotal)}</strong></article>
         <article><span>Net</span><strong>${money(incomeTotal - expenseTotal)}</strong></article>
-        <article><span>Mileage & tolls</span><strong>${miles.toFixed(1)} mi</strong><small>${money(data.expenses.filter((item) => /toll/i.test(categoryName(item.category_id))).reduce((sum, item) => sum + num(item.amount), 0))} tolls</small></article>
+        <article><span>Mileage & tolls</span><strong>${mileageSummary.miles.toFixed(1)} mi</strong><small>${money(mileageSummary.deduction)} deduction · ${money(data.expenses.filter((item) => /toll/i.test(categoryName(item.category_id))).reduce((sum, item) => sum + num(item.amount), 0))} tolls${mileageSummary.missingRateCount ? ` · ${mileageSummary.missingRateCount} missing rate` : ""}</small></article>
         <article><span>Missing receipts</span><strong>${missing}</strong></article>
       </div>
       <div class="report-summary-grid">
@@ -893,7 +923,7 @@
       <section class="panel report-ledger">
         <div class="panel-heading"><div><p class="section-kicker">Detailed ledger</p><h2>Filtered transactions</h2></div><span>${transactionRows.length} records</span></div>
         ${transactionRows.length ? `<div class="table-wrap"><table class="data-table"><thead><tr><th>Date</th><th>Type</th><th>Party / route</th><th>Detail</th><th>Client</th><th>Status</th><th class="number">Amount / miles</th></tr></thead>
-          <tbody>${transactionRows.map((row) => `<tr><td>${shortDate(row.date)}</td><td>${escapeHtml(row.type)}</td><td><strong>${escapeHtml(row.party)}</strong></td><td>${escapeHtml(row.detail)}</td><td>${escapeHtml(row.client)}</td><td>${escapeHtml(row.status)}</td><td class="number">${row.miles != null ? `${row.miles.toFixed(1)} mi` : money(row.amount)}</td></tr>`).join("")}</tbody></table></div>`
+          <tbody>${transactionRows.map((row) => `<tr><td>${shortDate(row.date)}</td><td>${escapeHtml(row.type)}</td><td><strong>${escapeHtml(row.party)}</strong></td><td>${escapeHtml(row.detail)}</td><td>${escapeHtml(row.client)}</td><td>${escapeHtml(row.status)}</td><td class="number">${row.miles != null ? `<strong>${row.miles.toFixed(1)} mi</strong><small>${money(row.deduction)} deduction</small>` : money(row.amount)}</td></tr>`).join("")}</tbody></table></div>`
           : emptyState("No matching transactions", "Adjust the filters or choose another report preset.")}
       </section>`;
   }
@@ -990,21 +1020,27 @@
         Notes: payment.notes || "",
       };
     });
-    const mileageRows = data.mileage.map((item) => ({
-      Date: item.mileage_date,
-      Origin: item.origin,
-      Destination: item.destination,
-      "Business Purpose": item.business_purpose,
-      Miles: num(item.miles),
-      Client: clientName(item.client_id),
-      Project: projectName(item.project_id),
-      Status: statusLabel(item.record_status),
-      "CPA Review": item.cpa_review ? "Yes" : "No",
-      "CPA Notes": item.cpa_notes || "",
-      Notes: item.notes || "",
-      Created: item.created_at || "",
-      Modified: item.updated_at || "",
-    }));
+    const mileageRows = data.mileage.map((item) => {
+      const rate = mileageRateForDate(item.mileage_date);
+      return {
+        Date: item.mileage_date,
+        Origin: item.origin,
+        Destination: item.destination,
+        "Business Purpose": item.business_purpose,
+        Miles: num(item.miles),
+        "Rate per Mile": rate ? num(rate.rate_per_mile) : "",
+        "Rate Period": rate ? `${rate.effective_from} through ${rate.effective_to}` : "Missing rate",
+        "Estimated Deduction": rate ? mileageDeductionFor(item) : "",
+        Client: clientName(item.client_id),
+        Project: projectName(item.project_id),
+        Status: statusLabel(item.record_status),
+        "CPA Review": item.cpa_review ? "Yes" : "No",
+        "CPA Notes": item.cpa_notes || "",
+        Notes: item.notes || "",
+        Created: item.created_at || "",
+        Modified: item.updated_at || "",
+      };
+    });
     const attachmentRows = data.attachments.map((item) => {
       const record = item.record_type === "expense" ? byId(state.expenses, item.expense_id) : byId(state.income, item.income_id);
       return {
@@ -1061,6 +1097,8 @@
         Detail: row.Category,
         Amount: -row.Amount,
         Miles: "",
+        "Rate per Mile": "",
+        "Estimated Mileage Deduction": "",
         Status: row.Status,
       })),
       ...paymentRows.map((row) => ({
@@ -1070,6 +1108,8 @@
         Detail: row["Invoice Number"],
         Amount: row.Amount,
         Miles: "",
+        "Rate per Mile": "",
+        "Estimated Mileage Deduction": "",
         Status: "Received",
       })),
       ...mileageRows.map((row) => ({
@@ -1079,6 +1119,8 @@
         Detail: row["Business Purpose"],
         Amount: "",
         Miles: row.Miles,
+        "Rate per Mile": row["Rate per Mile"],
+        "Estimated Mileage Deduction": row["Estimated Deduction"],
         Status: row.Status,
       })),
     ].sort((a, b) => String(a.Date).localeCompare(String(b.Date)));
@@ -1111,7 +1153,13 @@
     );
     const incomeTotal = data.payments.reduce((sum, item) => sum + num(item.amount), 0);
     const expenseTotal = expenseGroups.reduce((sum, item) => sum + item[1], 0);
-    const miles = data.mileage.reduce((sum, item) => sum + num(item.miles), 0);
+    const mileageSummary = mileageTotals(data.mileage);
+    const ratesApplied = [...new Set(
+      data.mileage
+        .map((item) => mileageRateForDate(item.mileage_date))
+        .filter(Boolean)
+        .map((item) => rateDisplay(item.rate_per_mile))
+    )].join(", ") || "None";
     const summary = [
       { Metric: "Business", Value: state.settings.business_name },
       { Metric: "Report generated", Value: new Date().toLocaleString() },
@@ -1119,9 +1167,10 @@
       { Metric: "Income received", Value: incomeTotal },
       { Metric: "Deductible expenses", Value: expenseTotal },
       { Metric: "Net business income", Value: incomeTotal - expenseTotal },
-      { Metric: "Business miles", Value: miles },
-      { Metric: "Mileage rate", Value: num(state.settings.mileage_rate) },
-      { Metric: "Estimated mileage deduction", Value: miles * num(state.settings.mileage_rate) },
+      { Metric: "Business miles", Value: mileageSummary.miles },
+      { Metric: "Mileage rates applied", Value: ratesApplied },
+      { Metric: "Estimated mileage deduction", Value: mileageSummary.deduction },
+      { Metric: "Mileage entries missing a rate", Value: mileageSummary.missingRateCount },
       { Metric: "Attachment count", Value: attachmentRows.length },
       { Metric: "CPA review items", Value: cpaRows.length },
     ];
@@ -1157,7 +1206,7 @@
     const { data, expenseRows, incomeRows, paymentRows, mileageRows, attachmentRows, cpaRows } = exportRows();
     const expenseTotal = expenseRows.reduce((sum, row) => sum + num(row["Deductible Amount"]), 0);
     const incomeTotal = paymentRows.reduce((sum, row) => sum + num(row.Amount), 0);
-    const miles = mileageRows.reduce((sum, row) => sum + num(row.Miles), 0);
+    const mileageSummary = mileageTotals(data.mileage);
     const expenseGroups = groupedTotals(
       data.expenses,
       (item) => categoryName(item.category_id),
@@ -1189,12 +1238,16 @@
     if (!autoTable) {
       documentPdf.text(`Income received: ${money(incomeTotal)}`, left, 85);
       documentPdf.text(`Deductible expenses: ${money(expenseTotal)}`, left, 101);
-      documentPdf.text(`Business mileage: ${miles.toFixed(1)} miles`, left, 117);
+      documentPdf.text(`Business mileage: ${mileageSummary.miles.toFixed(1)} miles`, left, 117);
+      documentPdf.text(`Estimated mileage deduction: ${money(mileageSummary.deduction)}`, left, 133);
+      if (mileageSummary.missingRateCount) {
+        documentPdf.text(`Mileage entries missing a rate: ${mileageSummary.missingRateCount}`, left, 149);
+      }
     } else {
       autoTable({
         startY: 72,
-        head: [["Income received", "Deductible expenses", "Net", "Business miles", "CPA review items"]],
-        body: [[money(incomeTotal), money(expenseTotal), money(incomeTotal - expenseTotal), miles.toFixed(1), cpaRows.length]],
+        head: [["Income received", "Deductible expenses", "Net", "Business miles", "Mileage deduction", "Missing rate", "CPA review items"]],
+        body: [[money(incomeTotal), money(expenseTotal), money(incomeTotal - expenseTotal), mileageSummary.miles.toFixed(1), money(mileageSummary.deduction), mileageSummary.missingRateCount, cpaRows.length]],
         theme: "grid",
         headStyles: { fillColor: [13, 75, 115] },
       });
@@ -1243,8 +1296,8 @@
       );
       section(
         "Mileage log",
-        ["Date", "Origin", "Destination", "Business purpose", "Client", "Miles", "Status"],
-        mileageRows.map((row) => [row.Date, row.Origin, row.Destination, row["Business Purpose"], row.Client, row.Miles, row.Status])
+        ["Date", "Origin", "Destination", "Business purpose", "Client", "Miles", "Rate", "Deduction", "Status"],
+        mileageRows.map((row) => [row.Date, row.Origin, row.Destination, row["Business Purpose"], row.Client, row.Miles, row["Rate per Mile"] === "" ? "Missing" : rateDisplay(row["Rate per Mile"]), row["Estimated Deduction"] === "" ? "" : money(row["Estimated Deduction"]), row.Status])
       );
       section(
         "Attachment index",
@@ -1262,6 +1315,15 @@
   }
 
   function renderSettings() {
+    const rateRows = [...state.mileage_rates]
+      .sort((a, b) => b.effective_from.localeCompare(a.effective_from))
+      .map((item) => `
+        <tr>
+          <td><strong>${shortDate(item.effective_from)} - ${shortDate(item.effective_to)}</strong><small>${escapeHtml(item.label || "Custom mileage rate")}</small></td>
+          <td><strong class="rate-value">${rateDisplay(item.rate_per_mile)}</strong><small>${money(item.rate_per_mile)} per mile</small></td>
+          <td>${item.is_active ? "Active" : "Inactive"}</td>
+          <td class="row-actions"><button type="button" data-action="edit-mileage-rate" data-id="${item.id}">Edit</button><button type="button" data-action="delete-mileage-rate" data-id="${item.id}">Delete</button></td>
+        </tr>`).join("");
     const categoryRows = [...state.categories]
       .sort((a, b) => a.sort_order - b.sort_order || a.name.localeCompare(b.name))
       .map((item) => `
@@ -1281,7 +1343,6 @@
               <label class="field field-wide">Business name<input name="business_name" required value="${escapeHtml(state.settings.business_name)}"></label>
               <label class="field">Default tax year<input name="default_tax_year" type="number" min="2000" max="2100" required value="${state.settings.default_tax_year}"></label>
               <label class="field">Currency code<input name="currency_code" maxlength="3" required value="${escapeHtml(state.settings.currency_code)}"></label>
-              <label class="field">Mileage rate per mile<input name="mileage_rate" type="number" min="0" step="0.001" required value="${num(state.settings.mileage_rate)}"></label>
               <label class="field">Contact email<input name="contact_email" type="email" value="${escapeHtml(state.settings.contact_email || state.user.email || "")}"></label>
               <div class="form-footer field-wide"><button class="button" type="submit">Save settings</button></div>
             </form>
@@ -1305,6 +1366,13 @@
                 </form>`}
           </section>
         </div>
+        <section class="panel mileage-rates-panel">
+          <div class="panel-heading"><div><p class="section-kicker">Date-driven deduction</p><h2>Mileage rates</h2><p>Each trip automatically uses the active rate covering its travel date.</p></div><button class="button" type="button" data-action="add-mileage-rate">+ Add rate</button></div>
+          <p class="settings-help">Active date ranges cannot overlap. The 2026 IRS business rates are 72.5¢ per mile from January 1 through June 30 and 76¢ per mile from July 1 through December 31. <a href="https://www.irs.gov/tax-professionals/standard-mileage-rates?nav=2" target="_blank" rel="noopener noreferrer">View IRS mileage rates</a>.</p>
+          ${state.mileage_rates.length
+            ? `<div class="table-wrap"><table class="data-table"><thead><tr><th>Date range</th><th>Rate</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${rateRows}</tbody></table></div>`
+            : emptyState("No mileage rates configured", "Add a date range and rate so mileage deductions can be calculated.", "add-mileage-rate", "Add mileage rate")}
+        </section>
         <section class="panel categories-panel">
           <div class="panel-heading"><div><p class="section-kicker">Extensible categories</p><h2>Expense categories</h2></div><button class="button" type="button" data-action="add-category">+ Add category</button></div>
           <div class="table-wrap"><table class="data-table"><thead><tr><th>Category</th><th>CPA / tax line</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>${categoryRows}</tbody></table></div>
@@ -1756,6 +1824,41 @@
           <label class="field field-wide">Notes<textarea name="notes" rows="2"></textarea></label>
         </div></div>
         <div class="form-footer"><button class="secondary-button" type="button" data-action="close-dialog">Cancel</button><button class="button" type="submit">Save payment</button></div>
+      </form>`
+    );
+  }
+
+  function mileageRateForm(item = null) {
+    const latestEnd = state.mileage_rates.reduce(
+      (latest, rate) => rate.effective_to > latest ? rate.effective_to : latest,
+      ""
+    );
+    let defaultFrom = yearStart();
+    if (latestEnd) {
+      const nextDate = new Date(`${latestEnd}T12:00:00Z`);
+      nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+      defaultFrom = nextDate.toISOString().slice(0, 10);
+    }
+    const record = item || {
+      effective_from: defaultFrom,
+      effective_to: yearEnd(Number(defaultFrom.slice(0, 4))),
+      rate_per_mile: "",
+      label: "",
+      is_active: true,
+    };
+    dialogFrame(
+      item ? "Edit mileage rate" : "Add mileage rate",
+      "The rate will be applied automatically to trips dated within this range.",
+      `<form class="record-form" data-form="mileage-rate" data-id="${item?.id || ""}">
+        <div class="form-section"><div class="form-grid">
+          <label class="field">Starting date<input name="effective_from" type="date" required value="${escapeHtml(record.effective_from)}"></label>
+          <label class="field">Ending date<input name="effective_to" type="date" required value="${escapeHtml(record.effective_to)}"></label>
+          <label class="field">Rate per mile (dollars)<input name="rate_per_mile" type="number" min="0" max="100" step="0.001" required value="${record.rate_per_mile === "" ? "" : num(record.rate_per_mile)}"><small>Example: enter 0.76 for 76 cents per mile.</small></label>
+          <label class="field field-grow">Label<input name="label" maxlength="180" value="${escapeHtml(record.label || "")}" placeholder="Example: IRS business rate - Jul through Dec 2026"></label>
+          <label class="field field-wide"><span class="check-label"><input name="is_active" type="checkbox" ${record.is_active ? "checked" : ""}> Active rate</span></label>
+        </div></div>
+        ${auditLine(item)}
+        <div class="form-footer">${item ? `<button class="danger-button" type="button" data-action="delete-mileage-rate" data-id="${item.id}">Delete rate</button>` : ""}<button class="secondary-button" type="button" data-action="close-dialog">Cancel</button><button class="button" type="submit">${item ? "Save changes" : "Add rate"}</button></div>
       </form>`
     );
   }
@@ -2241,13 +2344,41 @@
     await refreshAfterSave(id ? "Category updated." : "Category added.");
   }
 
+  async function saveMileageRate(form) {
+    const data = new FormData(form);
+    const id = form.dataset.id || null;
+    const payload = {
+      effective_from: String(data.get("effective_from")),
+      effective_to: String(data.get("effective_to")),
+      rate_per_mile: num(data.get("rate_per_mile")),
+      label: clean(data.get("label")),
+      is_active: form.elements.is_active.checked,
+    };
+    if (payload.effective_to < payload.effective_from) {
+      throw new Error("The ending date must be on or after the starting date.");
+    }
+    if (payload.is_active) {
+      const overlap = state.mileage_rates.find((item) =>
+        item.id !== id &&
+        item.is_active &&
+        !(item.effective_to < payload.effective_from || item.effective_from > payload.effective_to)
+      );
+      if (overlap) {
+        const error = new Error("This date range overlaps another active mileage rate.");
+        error.code = "MILEAGE_RATE_OVERLAP";
+        throw error;
+      }
+    }
+    await saveRow("mileage_rates", payload, id);
+    await refreshAfterSave(id ? "Mileage rate updated." : "Mileage rate added.");
+  }
+
   async function saveSettings(form) {
     const data = new FormData(form);
     const payload = {
       business_name: String(data.get("business_name")).trim(),
       default_tax_year: num(data.get("default_tax_year")),
       currency_code: String(data.get("currency_code")).trim().toUpperCase(),
-      mileage_rate: num(data.get("mileage_rate")),
       contact_email: clean(data.get("contact_email")),
     };
     if (state.demo) {
@@ -2331,6 +2462,17 @@
     mileageForm();
   }
 
+  async function deleteMileageRate(id) {
+    const item = byId(state.mileage_rates, id);
+    if (!item) return;
+    if (!window.confirm(`Delete the mileage rate for ${shortDate(item.effective_from)} through ${shortDate(item.effective_to)}? Trips will remain, but deductions for dates without another rate will show as missing.`)) return;
+    await deleteRow("mileage_rates", id);
+    if (!state.demo) await loadData();
+    if ($("#record-dialog").open) $("#record-dialog").close();
+    toast("Mileage rate deleted.");
+    renderRoute();
+  }
+
   async function toggleCategory(id) {
     const item = byId(state.categories, id);
     await saveRow("categories", { is_active: !item.is_active }, id);
@@ -2386,6 +2528,9 @@
         break;
       case "edit-project": projectForm(byId(state.projects, id)); break;
       case "delete-project": await deleteRecord("project", id); break;
+      case "add-mileage-rate": mileageRateForm(); break;
+      case "edit-mileage-rate": mileageRateForm(byId(state.mileage_rates, id)); break;
+      case "delete-mileage-rate": await deleteMileageRate(id); break;
       case "add-category": categoryForm(); break;
       case "edit-category": categoryForm(byId(state.categories, id)); break;
       case "toggle-category": await toggleCategory(id); break;
@@ -2412,6 +2557,7 @@
       project: saveProject,
       payment: savePayment,
       category: saveCategory,
+      "mileage-rate": saveMileageRate,
       settings: saveSettings,
       password: savePassword,
     };

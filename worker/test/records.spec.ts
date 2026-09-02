@@ -6,6 +6,7 @@ describe("bookkeeping record validation", () => {
     expect(recordTable("expenses")).toBe("expenses");
     expect(recordTable("income_payments")).toBe("income_payments");
     expect(recordTable("trip_templates")).toBe("trip_templates");
+    expect(recordTable("mileage_rates")).toBe("mileage_rates");
     expect(recordTable("admin_sessions")).toBeNull();
     expect(recordTable("expenses; DROP TABLE expenses")).toBeNull();
   });
@@ -53,6 +54,31 @@ describe("bookkeeping record validation", () => {
     expect(() => normalizeRecordPayload("income", { amount: -1 })).toThrow(/allowed range/i);
     expect(() => normalizeRecordPayload("expenses", { record_status: "approved" })).toThrow(/invalid/i);
     expect(() => normalizeRecordPayload("categories", { color: "red" })).toThrow(/valid category color/i);
+  });
+
+  it("normalizes effective-dated mileage rates", () => {
+    const payload = normalizeRecordPayload("mileage_rates", {
+      effective_from: "2026-07-01",
+      effective_to: "2026-12-31",
+      rate_per_mile: 0.76,
+      label: "IRS business rate - Jul through Dec 2026",
+      is_active: true,
+      owner_id: "attacker",
+    });
+    expect(payload).toEqual({
+      effective_from: "2026-07-01",
+      effective_to: "2026-12-31",
+      rate_per_mile: 0.76,
+      label: "IRS business rate - Jul through Dec 2026",
+      is_active: 1,
+    });
+    expect(() => normalizeRecordPayload("mileage_rates", {
+      effective_from: "2026-07-01",
+      effective_to: "2026-06-30",
+    })).toThrow(/ending date/i);
+    expect(() => normalizeRecordPayload("mileage_rates", {
+      rate_per_mile: 101,
+    })).toThrow(/allowed range/i);
   });
 
   it("normalizes multi-date mileage and toll batches", () => {

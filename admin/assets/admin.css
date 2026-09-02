@@ -1107,8 +1107,30 @@ a { color: var(--blue); }
 
 .settings-panel,
 .security-panel,
-.categories-panel {
+.categories-panel,
+.mileage-rates-panel {
   padding: 1.25rem;
+}
+
+.mileage-rates-panel {
+  margin-bottom: 1rem;
+}
+
+.settings-help {
+  max-width: 62rem;
+  margin: -.15rem 0 1rem;
+  color: var(--muted);
+  font-size: .74rem;
+  line-height: 1.6;
+}
+
+.settings-help a {
+  color: var(--blue);
+  font-weight: 700;
+}
+
+.rate-value {
+  color: var(--ink);
 }
 
 .settings-form {
@@ -1142,7 +1164,8 @@ a { color: var(--blue); }
   background: var(--gold-soft);
 }
 
-.categories-panel .panel-heading {
+.categories-panel .panel-heading,
+.mileage-rates-panel .panel-heading {
   align-items: center;
 }
 

@@ -14,6 +14,7 @@ const RECORD_FIELDS = {
     "name", "origin", "destination", "business_purpose", "miles", "toll_amount", "toll_vendor",
     "payment_method", "client_id", "project_id", "notes", "is_active",
   ],
+  mileage_rates: ["effective_from", "effective_to", "rate_per_mile", "label", "is_active"],
   expenses: [
     "expense_date", "vendor", "amount", "category_id", "description", "business_purpose",
     "payment_method", "client_id", "project_id", "tax_year", "reimbursable", "reimbursed",
@@ -38,6 +39,7 @@ type NormalizedRecord = Record<string, string | number | null>;
 type ProjectRow = { client_id: string };
 type ClientRow = { id: string };
 type ExistingRelationshipRow = { client_id: string | null; project_id: string | null };
+type MileageRateRow = { effective_from: string; effective_to: string; is_active: number };
 
 export function recordTable(value: string): RecordTable | null {
   return Object.prototype.hasOwnProperty.call(RECORD_FIELDS, value) ? value as RecordTable : null;
@@ -171,6 +173,19 @@ export function normalizeRecordPayload(table: RecordTable, body: JsonRecord): No
       put(result, "notes", optionalText(body, "notes"));
       put(result, "is_active", booleanValue(body, "is_active"));
       break;
+    case "mileage_rates": {
+      const effectiveFrom = dateValue(body, "effective_from");
+      const effectiveTo = dateValue(body, "effective_to");
+      put(result, "effective_from", effectiveFrom);
+      put(result, "effective_to", effectiveTo);
+      put(result, "rate_per_mile", numberValue(body, "rate_per_mile", 0, 100));
+      put(result, "label", optionalText(body, "label", 180));
+      put(result, "is_active", booleanValue(body, "is_active"));
+      if (effectiveFrom && effectiveTo && effectiveTo < effectiveFrom) {
+        throw new AdminError(422, "INVALID_MILEAGE_RATE", "The ending date must be on or after the starting date.");
+      }
+      break;
+    }
     case "expenses":
       put(result, "expense_date", dateValue(body, "expense_date"));
       put(result, "vendor", requiredText(body, "vendor", 180));
@@ -239,6 +254,7 @@ const REQUIRED_FIELDS: Record<RecordTable, readonly string[]> = {
   clients: ["name", "is_active"],
   projects: ["client_id", "name", "is_active"],
   trip_templates: ["name", "origin", "destination", "business_purpose", "miles", "toll_amount", "is_active"],
+  mileage_rates: ["effective_from", "effective_to", "rate_per_mile", "is_active"],
   expenses: [
     "expense_date", "vendor", "amount", "tax_year", "reimbursable", "reimbursed",
     "deductibility_percent", "record_status", "cpa_review",
@@ -255,6 +271,9 @@ function requireCreateFields(table: RecordTable, payload: NormalizedRecord): voi
 
 function databaseError(error: unknown): never {
   const message = error instanceof Error ? error.message : String(error);
+  if (/MILEAGE_RATE_OVERLAP/i.test(message)) {
+    throw new AdminError(409, "MILEAGE_RATE_OVERLAP", "This date range overlaps another active mileage rate.");
+  }
   if (/UNIQUE constraint failed/i.test(message)) {
     throw new AdminError(409, "DUPLICATE_RECORD", "A record with those unique details already exists.");
   }
@@ -307,6 +326,41 @@ async function validateProjectRelationship(
   }
 }
 
+async function validateMileageRate(
+  env: Env,
+  table: RecordTable,
+  id: string | null,
+  payload: NormalizedRecord,
+): Promise<void> {
+  if (table !== "mileage_rates") return;
+  let effectiveFrom = payload.effective_from as string | undefined;
+  let effectiveTo = payload.effective_to as string | undefined;
+  let isActive = payload.is_active as number | undefined;
+  if (id && (effectiveFrom === undefined || effectiveTo === undefined || isActive === undefined)) {
+    const existing = await env.DB.prepare(
+      "SELECT effective_from, effective_to, is_active FROM mileage_rates WHERE id = ?1",
+    ).bind(id).first<MileageRateRow>();
+    if (!existing) throw new AdminError(404, "NOT_FOUND", "That mileage rate no longer exists.");
+    effectiveFrom ??= existing.effective_from;
+    effectiveTo ??= existing.effective_to;
+    isActive ??= existing.is_active;
+  }
+  if (!effectiveFrom || !effectiveTo) return;
+  if (effectiveTo < effectiveFrom) {
+    throw new AdminError(422, "INVALID_MILEAGE_RATE", "The ending date must be on or after the starting date.");
+  }
+  if (isActive === 0) return;
+  const overlap = await env.DB.prepare(
+    `SELECT id FROM mileage_rates
+     WHERE is_active = 1 AND (?1 IS NULL OR id <> ?1)
+       AND NOT (effective_to < ?2 OR effective_from > ?3)
+     LIMIT 1`,
+  ).bind(id, effectiveFrom, effectiveTo).first();
+  if (overlap) {
+    throw new AdminError(409, "MILEAGE_RATE_OVERLAP", "This date range overlaps another active mileage rate.");
+  }
+}
+
 export async function bookkeepingData(env: Env): Promise<Response> {
   const statements = [
     env.DB.prepare("SELECT * FROM app_settings WHERE owner_id = 'primary' LIMIT 1"),
@@ -314,6 +368,7 @@ export async function bookkeepingData(env: Env): Promise<Response> {
     env.DB.prepare("SELECT * FROM clients ORDER BY lower(name)"),
     env.DB.prepare("SELECT * FROM projects ORDER BY lower(name)"),
     env.DB.prepare("SELECT * FROM trip_templates WHERE is_active = 1 ORDER BY lower(name)"),
+    env.DB.prepare("SELECT * FROM mileage_rates ORDER BY effective_from DESC, effective_to DESC"),
     env.DB.prepare("SELECT * FROM expenses ORDER BY expense_date DESC, created_at DESC"),
     env.DB.prepare("SELECT * FROM income ORDER BY income_date DESC, created_at DESC"),
     env.DB.prepare("SELECT * FROM income_payments ORDER BY payment_date DESC, created_at DESC"),
@@ -332,11 +387,12 @@ export async function bookkeepingData(env: Env): Promise<Response> {
     clients: results[2]?.results ?? [],
     projects: results[3]?.results ?? [],
     trip_templates: results[4]?.results ?? [],
-    expenses: results[5]?.results ?? [],
-    income: results[6]?.results ?? [],
-    income_payments: results[7]?.results ?? [],
-    mileage_entries: results[8]?.results ?? [],
-    attachments: results[9]?.results ?? [],
+    mileage_rates: results[5]?.results ?? [],
+    expenses: results[6]?.results ?? [],
+    income: results[7]?.results ?? [],
+    income_payments: results[8]?.results ?? [],
+    mileage_entries: results[9]?.results ?? [],
+    attachments: results[10]?.results ?? [],
   });
 }
 
@@ -345,6 +401,7 @@ export async function createRecord(request: Request, env: Env, table: RecordTabl
   const payload = normalizeRecordPayload(table, body);
   requireCreateFields(table, payload);
   await validateProjectRelationship(env, table, null, payload);
+  await validateMileageRate(env, table, null, payload);
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
   const columns = Object.keys(payload);
@@ -369,6 +426,7 @@ export async function updateRecord(request: Request, env: Env, table: RecordTabl
   const payload = normalizeRecordPayload(table, body);
   if (!Object.keys(payload).length) throw new AdminError(422, "INVALID_RECORD", "No changes were provided.");
   await validateProjectRelationship(env, table, id, payload);
+  await validateMileageRate(env, table, id, payload);
   payload.updated_at = new Date().toISOString();
   const columns = Object.keys(payload);
   const values = Object.values(payload);
