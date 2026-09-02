@@ -18,6 +18,7 @@ import {
   updateRecord,
   updateSettings,
 } from "./records";
+import { createTripBatch } from "./trips";
 
 function routePath(pathname: string): string {
   const stripped = pathname.replace(/^\/api\/admin(?=\/|$)/, "");
@@ -59,6 +60,10 @@ async function route(request: Request, env: Env, path: string, url: URL): Promis
   if (request.method === "POST" && path === "/attachments") {
     await requireMutation(request, env);
     return uploadAttachment(request, env, url);
+  }
+  if (request.method === "POST" && path === "/trips/batch") {
+    await requireMutation(request, env);
+    return createTripBatch(request, env);
   }
 
   const attachmentMatch = path.match(/^\/attachments\/([^/]+)$/);
@@ -159,3 +164,4 @@ export default {
 export { routePath };
 export { adminPasswordPolicyError, deriveAdminPasswordHash, isAllowedOrigin, secureEqual } from "./security";
 export { normalizeRecordPayload, recordTable } from "./records";
+export { normalizeTripBatchPayload } from "./trips";

@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { normalizeRecordPayload, recordTable } from "../src/index";
+import { normalizeRecordPayload, normalizeTripBatchPayload, recordTable } from "../src/index";
 
 describe("bookkeeping record validation", () => {
   it("allows only known database tables", () => {
     expect(recordTable("expenses")).toBe("expenses");
     expect(recordTable("income_payments")).toBe("income_payments");
+    expect(recordTable("trip_templates")).toBe("trip_templates");
     expect(recordTable("admin_sessions")).toBeNull();
     expect(recordTable("expenses; DROP TABLE expenses")).toBeNull();
   });
@@ -52,5 +53,39 @@ describe("bookkeeping record validation", () => {
     expect(() => normalizeRecordPayload("income", { amount: -1 })).toThrow(/allowed range/i);
     expect(() => normalizeRecordPayload("expenses", { record_status: "approved" })).toThrow(/invalid/i);
     expect(() => normalizeRecordPayload("categories", { color: "red" })).toThrow(/valid category color/i);
+  });
+
+  it("normalizes multi-date mileage and toll batches", () => {
+    const payload = normalizeTripBatchPayload({
+      dates: ["2026-09-03", "2026-09-01", "2026-09-03"],
+      origin: "  McKinney, TX ",
+      destination: "Dallas, TX",
+      business_purpose: "Client meeting",
+      miles: 64.2,
+      client_id: null,
+      project_id: null,
+      record_status: "included",
+      cpa_review: false,
+      toll_amount: 8.75,
+      toll_vendor: "NTTA",
+      allow_duplicates: false,
+    });
+    expect(payload.dates).toEqual(["2026-09-01", "2026-09-03"]);
+    expect(payload.origin).toBe("McKinney, TX");
+    expect(payload.tollAmount).toBe(8.75);
+  });
+
+  it("rejects invalid trip batches", () => {
+    expect(() => normalizeTripBatchPayload({ dates: [] })).toThrow(/trip dates/i);
+    expect(() => normalizeTripBatchPayload({
+      dates: ["2026-02-30"],
+      origin: "A",
+      destination: "B",
+      business_purpose: "Meeting",
+      miles: 10,
+      record_status: "included",
+      cpa_review: false,
+      toll_amount: 0,
+    })).toThrow(/valid date/i);
   });
 });

@@ -10,6 +10,7 @@
     "categories",
     "clients",
     "projects",
+    "trip_templates",
     "expenses",
     "income",
     "income_payments",
@@ -59,6 +60,7 @@
     categories: [],
     clients: [],
     projects: [],
+    trip_templates: [],
     expenses: [],
     income: [],
     income_payments: [],
@@ -192,6 +194,13 @@
     const projectA = { id: uid(), owner_id: owner, client_id: clientA.id, name: "Leadership Coaching", description: "", is_active: true };
     const projectB = { id: uid(), owner_id: owner, client_id: clientB.id, name: "Technology Advisory", description: "", is_active: true };
     state.projects = [projectA, projectB];
+    state.trip_templates = [{
+      id: uid(), owner_id: owner, name: "Northstar workshop", origin: "McKinney, TX",
+      destination: "Dallas, TX", business_purpose: "Client workshop", miles: 67.4,
+      toll_amount: 12.84, toll_vendor: "NTTA", payment_method: "Business credit card",
+      client_id: clientA.id, project_id: projectA.id, notes: "Round trip", is_active: true,
+      created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+    }];
     state.expenses = [
       { id: uid(), owner_id: owner, expense_date: demoDate(8, 21), vendor: "Delta Air Lines", amount: 486.2, category_id: state.categories.find((item) => item.name.includes("Airfare")).id, description: "Client travel", business_purpose: "Onsite leadership workshop", payment_method: "Business credit card", client_id: clientA.id, project_id: projectA.id, tax_year: currentYear(), reimbursable: false, reimbursed: false, deductibility_percent: 100, record_status: "included", cpa_review: false, cpa_notes: "", notes: "" },
       { id: uid(), owner_id: owner, expense_date: demoDate(8, 18), vendor: "The Yard Coffee", amount: 18.45, category_id: meal.id, description: "Coffee meeting", business_purpose: "Discovery conversation with prospective client", payment_method: "Business credit card", client_id: null, project_id: null, tax_year: currentYear(), reimbursable: false, reimbursed: false, deductibility_percent: 50, record_status: "needs_review", cpa_review: true, cpa_notes: "Confirm meal deductibility.", notes: "" },
@@ -241,6 +250,7 @@
       const error = new Error(payload.error || "The request could not be completed.");
       error.code = payload.code || "REQUEST_FAILED";
       error.status = response.status;
+      error.details = payload.details || null;
       if (response.status === 401 && path !== "/login") {
         state.user = null;
         state.session = null;
@@ -1496,6 +1506,99 @@
     );
   }
 
+  function tripWeekDates(value) {
+    const anchor = new Date(`${value || today()}T12:00:00Z`);
+    const day = anchor.getUTCDay();
+    const monday = new Date(anchor);
+    monday.setUTCDate(anchor.getUTCDate() - (day === 0 ? 6 : day - 1));
+    return Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(monday);
+      date.setUTCDate(monday.getUTCDate() + index);
+      return date.toISOString().slice(0, 10);
+    });
+  }
+
+  function selectedMileageDates(form) {
+    const baseDate = form.elements.mileage_date?.value;
+    const selected = form.elements.repeat_trip?.checked
+      ? $$('input[name="batch_date"]:checked', form).map((input) => input.value)
+      : [];
+    return [...new Set([baseDate, ...selected].filter(Boolean))].sort();
+  }
+
+  function renderTripWeek(form) {
+    const container = $("[data-trip-week]", form);
+    if (!container) return;
+    const baseDate = form.elements.mileage_date.value || today();
+    const selected = new Set(selectedMileageDates(form));
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      month: "short", day: "numeric", timeZone: "UTC",
+    });
+    container.innerHTML = tripWeekDates(baseDate).map((date) => {
+      const label = new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone: "UTC" })
+        .format(new Date(`${date}T12:00:00Z`));
+      const isBase = date === baseDate;
+      return `<label class="trip-date-option ${isBase ? "is-base" : ""}">
+        <input type="checkbox" name="batch_date" value="${date}" ${isBase || selected.has(date) ? "checked" : ""} ${isBase ? "disabled" : ""}>
+        <span><strong>${label}</strong><small>${formatter.format(new Date(`${date}T12:00:00Z`))}</small></span>
+      </label>`;
+    }).join("");
+  }
+
+  function updateMileagePreview(form) {
+    if (form.dataset.id) return;
+    const dates = selectedMileageDates(form);
+    const tripCount = Math.max(1, dates.length);
+    const miles = num(form.elements.miles?.value);
+    const tollAmount = num(form.elements.toll_amount?.value);
+    const preview = $("[data-mileage-preview]", form);
+    if (preview) {
+      preview.innerHTML = `
+        <div><span>Trip dates</span><strong>${tripCount}</strong></div>
+        <div><span>Total mileage</span><strong>${(miles * tripCount).toFixed(1)} mi</strong></div>
+        <div><span>Toll expenses</span><strong>${tollAmount > 0 ? money(tollAmount * tripCount) : "None"}</strong></div>
+        <p>${dates.length ? dates.map(shortDate).join(" · ") : "Choose a trip date."}${tollAmount > 0 ? ` Each date will receive a separate ${money(tollAmount)} toll expense.` : ""}</p>`;
+    }
+    const submit = $('button[type="submit"]', form);
+    if (submit && !form.dataset.saveDuplicate) {
+      submit.dataset.defaultLabel = tripCount > 1 ? `Save ${tripCount} trips` : "Save trip";
+      submit.textContent = submit.dataset.defaultLabel;
+    }
+  }
+
+  function syncNewMileageForm(form, rebuildWeek = false) {
+    if (!form || form.dataset.id) return;
+    const repeatPanel = $("[data-repeat-trip-panel]", form);
+    if (repeatPanel) repeatPanel.hidden = !form.elements.repeat_trip.checked;
+    if (rebuildWeek || form.elements.repeat_trip.checked) renderTripWeek(form);
+    const favoriteName = $("[data-favorite-name]", form);
+    if (favoriteName) favoriteName.hidden = !form.elements.save_as_template.checked;
+    form.elements.template_name.required = form.elements.save_as_template.checked;
+    const deleteFavorite = $("[data-action='delete-trip-template']", form);
+    if (deleteFavorite) deleteFavorite.disabled = !form.elements.trip_template_id.value;
+    updateMileagePreview(form);
+  }
+
+  function applyTripTemplate(form, templateId) {
+    const template = byId(state.trip_templates, templateId);
+    if (!template) return;
+    [
+      ["origin", template.origin],
+      ["destination", template.destination],
+      ["business_purpose", template.business_purpose],
+      ["miles", template.miles],
+      ["client_id", template.client_id || ""],
+      ["project_id", template.project_id || ""],
+      ["toll_amount", template.toll_amount || ""],
+      ["toll_vendor", template.toll_vendor || ""],
+      ["toll_payment_method", template.payment_method || ""],
+      ["notes", template.notes || ""],
+    ].forEach(([name, value]) => {
+      if (form.elements[name]) form.elements[name].value = value;
+    });
+    updateMileagePreview(form);
+  }
+
   function mileageForm(item = null) {
     const record = item || {
       mileage_date: today(),
@@ -1511,31 +1614,96 @@
       cpa_notes: "",
       notes: "",
     };
-    dialogFrame(
-      item ? "Edit mileage entry" : "Log business mileage",
-      "Record the route and business purpose while the trip is easy to document.",
-      `<form class="record-form" data-form="mileage" data-id="${item?.id || ""}">
-        <div class="form-section"><div class="form-grid">
-          <label class="field">Date<input name="mileage_date" type="date" required value="${escapeHtml(record.mileage_date)}"></label>
-          <label class="field field-grow">Origin<input name="origin" required value="${escapeHtml(record.origin)}" placeholder="Street, city, or office"></label>
-          <label class="field field-grow">Destination<input name="destination" required value="${escapeHtml(record.destination)}" placeholder="Street, city, or client site"></label>
-          <label class="field">Miles<input name="miles" type="number" min="0.01" step="0.01" required value="${escapeHtml(record.miles)}"></label>
-          <label class="field field-wide">Business purpose<textarea name="business_purpose" rows="2" required>${escapeHtml(record.business_purpose)}</textarea></label>
-          <label class="field">Client<select name="client_id">${optionList(state.clients.filter((clientItem) => clientItem.is_active), record.client_id, "No client")}</select></label>
-          <label class="field">Project<select name="project_id">${optionList(state.projects.filter((project) => project.is_active), record.project_id, "No project", (project) => `${clientName(project.client_id)} - ${project.name}`)}</select></label>
-          <label class="field">Tax year<input name="tax_year" type="number" min="2000" max="2100" required value="${record.tax_year}"></label>
-          <label class="field">Record status<select name="record_status">${recordStatusOptions(record.record_status)}</select></label>
-          <label class="field field-wide">Notes<textarea name="notes" rows="2">${escapeHtml(record.notes || "")}</textarea></label>
-          <label class="field field-wide"><span class="check-label"><input name="cpa_review" type="checkbox" ${record.cpa_review ? "checked" : ""}> Flag for CPA review</span></label>
-          <label class="field field-wide">CPA question / note<textarea name="cpa_notes" rows="2">${escapeHtml(record.cpa_notes || "")}</textarea></label>
-        </div></div>
-        <div class="duplicate-warning" data-duplicate-warning hidden></div>
-        ${auditLine(item)}
-        <div class="form-footer"><button class="secondary-button" type="button" data-action="close-dialog">Cancel</button><button class="button" type="submit">${item ? "Save changes" : "Save mileage"}</button></div>
-      </form>`
-    );
-  }
+    if (item) {
+      dialogFrame(
+        "Edit mileage entry",
+        "Update this individual mileage record. Any linked toll expense remains a separate expense record.",
+        `<form class="record-form" data-form="mileage" data-id="${item.id}">
+          <div class="form-section"><div class="form-grid">
+            <label class="field">Date<input name="mileage_date" type="date" required value="${escapeHtml(record.mileage_date)}"></label>
+            <label class="field field-grow">Origin<input name="origin" required value="${escapeHtml(record.origin)}"></label>
+            <label class="field field-grow">Destination<input name="destination" required value="${escapeHtml(record.destination)}"></label>
+            <label class="field">Miles<input name="miles" type="number" min="0.01" step="0.01" required value="${escapeHtml(record.miles)}"></label>
+            <label class="field field-wide">Business purpose<textarea name="business_purpose" rows="2" required>${escapeHtml(record.business_purpose)}</textarea></label>
+            <label class="field">Client<select name="client_id">${optionList(state.clients.filter((clientItem) => clientItem.is_active), record.client_id, "No client")}</select></label>
+            <label class="field">Project<select name="project_id">${optionList(state.projects.filter((project) => project.is_active), record.project_id, "No project", (project) => `${clientName(project.client_id)} - ${project.name}`)}</select></label>
+            <label class="field">Tax year<input name="tax_year" type="number" min="2000" max="2100" required value="${record.tax_year}"></label>
+            <label class="field">Record status<select name="record_status">${recordStatusOptions(record.record_status)}</select></label>
+            <label class="field field-wide">Notes<textarea name="notes" rows="2">${escapeHtml(record.notes || "")}</textarea></label>
+            <label class="field field-wide"><span class="check-label"><input name="cpa_review" type="checkbox" ${record.cpa_review ? "checked" : ""}> Flag for CPA review</span></label>
+            <label class="field field-wide">CPA question / note<textarea name="cpa_notes" rows="2">${escapeHtml(record.cpa_notes || "")}</textarea></label>
+          </div></div>
+          <div class="duplicate-warning" data-duplicate-warning hidden></div>
+          ${auditLine(item)}
+          <div class="form-footer"><button class="secondary-button" type="button" data-action="close-dialog">Cancel</button><button class="button" type="submit" data-default-label="Save changes">Save changes</button></div>
+        </form>`,
+        "dialog-wide"
+      );
+      return;
+    }
 
+    const templates = state.trip_templates.filter((template) => template.is_active);
+    dialogFrame(
+      "Log mileage & tolls",
+      "Enter one trip, choose every date it happened, and create the matching mileage and toll records together.",
+      `<form class="record-form" data-form="mileage">
+        <div class="form-section">
+          <h3>Saved trip</h3>
+          <div class="favorite-trip-row">
+            <label class="field field-grow">Use a favorite trip
+              <select name="trip_template_id">${optionList(templates, "", "Choose a saved trip")}</select>
+              <small>Choosing a favorite fills the route, miles, tolls, client, and purpose.</small>
+            </label>
+            <button class="secondary-button compact-button" type="button" data-action="delete-trip-template" disabled>Delete favorite</button>
+          </div>
+        </div>
+        <div class="form-section">
+          <h3>Trip details</h3>
+          <div class="form-grid">
+            <label class="field">First date<input name="mileage_date" type="date" required value="${escapeHtml(record.mileage_date)}"></label>
+            <label class="field field-grow">Origin<input name="origin" required maxlength="240" value="${escapeHtml(record.origin)}" placeholder="Street, city, or office"></label>
+            <label class="field field-grow">Destination<input name="destination" required maxlength="240" value="${escapeHtml(record.destination)}" placeholder="Street, city, or client site"></label>
+            <label class="field">Miles for each date<input name="miles" type="number" min="0.01" step="0.01" required value="${escapeHtml(record.miles)}"></label>
+            <label class="field field-wide">Business purpose<textarea name="business_purpose" rows="2" maxlength="500" required>${escapeHtml(record.business_purpose)}</textarea></label>
+            <label class="field field-wide"><span class="check-label"><input name="repeat_trip" type="checkbox"> Repeat this same trip on other days this week</span></label>
+            <div class="repeat-trip-panel field-wide" data-repeat-trip-panel hidden>
+              <p>Select every day this same trip occurred. The first date stays selected.</p>
+              <div class="trip-date-grid" data-trip-week></div>
+            </div>
+          </div>
+        </div>
+        <div class="form-section toll-section">
+          <h3>Tolls & classification</h3>
+          <div class="form-grid">
+            <label class="field">Tolls for each date
+              <input name="toll_amount" type="number" min="0" step="0.01" value="" placeholder="0.00">
+              <small>Leave at $0 when there were no tolls.</small>
+            </label>
+            <label class="field">Toll provider / vendor<input name="toll_vendor" maxlength="180" placeholder="NTTA or toll road"></label>
+            <label class="field">Toll payment method<select name="toll_payment_method">${methodOptions("")}</select></label>
+            <label class="field">Client<select name="client_id">${optionList(state.clients.filter((clientItem) => clientItem.is_active), record.client_id, "No client")}</select></label>
+            <label class="field">Project<select name="project_id">${optionList(state.projects.filter((project) => project.is_active), record.project_id, "No project", (project) => `${clientName(project.client_id)} - ${project.name}`)}</select></label>
+            <label class="field">Record status<select name="record_status">${recordStatusOptions(record.record_status)}</select></label>
+          </div>
+        </div>
+        <div class="form-section">
+          <h3>Notes & review</h3>
+          <div class="form-grid">
+            <label class="field field-wide">Notes<textarea name="notes" rows="2">${escapeHtml(record.notes || "")}</textarea></label>
+            <label class="field field-wide"><span class="check-label"><input name="cpa_review" type="checkbox"> Flag mileage and tolls for CPA review</span></label>
+            <label class="field field-wide">CPA question / note<textarea name="cpa_notes" rows="2"></textarea></label>
+            <label class="field field-wide"><span class="check-label"><input name="save_as_template" type="checkbox"> Save these details as a favorite trip</span></label>
+            <label class="field field-wide" data-favorite-name hidden>Favorite name<input name="template_name" maxlength="100" placeholder="For example: Weekly Dallas client visit"></label>
+          </div>
+        </div>
+        <div class="mileage-preview" data-mileage-preview aria-live="polite"></div>
+        <div class="duplicate-warning" data-duplicate-warning hidden></div>
+        <div class="form-footer"><button class="secondary-button" type="button" data-action="close-dialog">Cancel</button><button class="button" type="submit" data-default-label="Save trip">Save trip</button></div>
+      </form>`,
+      "dialog-wide"
+    );
+    syncNewMileageForm($("form[data-form='mileage']", $("#record-dialog")), true);
+  }
   function clientForm(item = null) {
     const record = item || { name: "", company: "", email: "", phone: "", notes: "", is_active: true };
     dialogFrame(
@@ -1828,30 +1996,183 @@
     await refreshAfterSave(id ? "Income record updated." : "Income record saved.");
   }
 
+  function showMileageDuplicateWarning(form, message) {
+    const warning = $("[data-duplicate-warning]", form);
+    warning.hidden = false;
+    warning.innerHTML = `<strong>Possible duplicate found.</strong><span>${escapeHtml(message)}</span>`;
+    form.dataset.saveDuplicate = "confirmed";
+    const submit = $('button[type="submit"]', form);
+    submit.textContent = "Save anyway";
+    submit.disabled = false;
+    warning.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function createDemoTripBatch(payload) {
+    const stamp = new Date().toISOString();
+    const batchId = uid();
+    let templateId = payload.template_id;
+    if (payload.template_name) {
+      if (state.trip_templates.some((item) => item.name.trim().toLowerCase() === payload.template_name.toLowerCase())) {
+        const error = new Error("A saved trip with that name already exists.");
+        error.code = "DUPLICATE_TEMPLATE";
+        throw error;
+      }
+      templateId = uid();
+      state.trip_templates.push({
+        id: templateId,
+        owner_id: state.user.id,
+        name: payload.template_name,
+        origin: payload.origin,
+        destination: payload.destination,
+        business_purpose: payload.business_purpose,
+        miles: payload.miles,
+        toll_amount: payload.toll_amount,
+        toll_vendor: payload.toll_vendor,
+        payment_method: payload.toll_payment_method,
+        client_id: payload.client_id,
+        project_id: payload.project_id,
+        notes: payload.notes,
+        is_active: true,
+        created_at: stamp,
+        updated_at: stamp,
+      });
+    }
+    const tollCategory = state.categories.find((category) => category.name.toLowerCase() === "tolls");
+    if (payload.toll_amount > 0 && !tollCategory) throw new Error("Add a Tolls expense category before logging tolls.");
+    payload.dates.forEach((date) => {
+      state.mileage_entries.push({
+        id: uid(),
+        owner_id: state.user.id,
+        mileage_date: date,
+        origin: payload.origin,
+        destination: payload.destination,
+        business_purpose: payload.business_purpose,
+        miles: payload.miles,
+        client_id: payload.client_id,
+        project_id: payload.project_id,
+        tax_year: Number(date.slice(0, 4)),
+        record_status: payload.record_status,
+        cpa_review: payload.cpa_review,
+        cpa_notes: payload.cpa_notes,
+        notes: payload.notes,
+        trip_batch_id: batchId,
+        trip_template_id: templateId,
+        created_at: stamp,
+        updated_at: stamp,
+      });
+      if (payload.toll_amount > 0) {
+        state.expenses.push({
+          id: uid(),
+          owner_id: state.user.id,
+          expense_date: date,
+          vendor: payload.toll_vendor || "Tolls",
+          amount: payload.toll_amount,
+          category_id: tollCategory.id,
+          description: `Tolls: ${payload.origin} to ${payload.destination}`,
+          business_purpose: payload.business_purpose,
+          payment_method: payload.toll_payment_method,
+          client_id: payload.client_id,
+          project_id: payload.project_id,
+          tax_year: Number(date.slice(0, 4)),
+          reimbursable: false,
+          reimbursed: false,
+          deductibility_percent: 100,
+          record_status: payload.record_status,
+          cpa_review: payload.cpa_review,
+          cpa_notes: payload.cpa_notes,
+          notes: payload.notes,
+          trip_batch_id: batchId,
+          trip_template_id: templateId,
+          created_at: stamp,
+          updated_at: stamp,
+        });
+      }
+    });
+    return {
+      mileageCount: payload.dates.length,
+      tollCount: payload.toll_amount > 0 ? payload.dates.length : 0,
+    };
+  }
+
   async function saveMileage(form) {
     const data = new FormData(form);
     const id = form.dataset.id || null;
     const selectedProjectId = clean(data.get("project_id"));
     const selectedProject = byId(state.projects, selectedProjectId);
-    const payload = {
-      mileage_date: data.get("mileage_date"),
+    const basePayload = {
       origin: String(data.get("origin")).trim(),
       destination: String(data.get("destination")).trim(),
       business_purpose: String(data.get("business_purpose")).trim(),
       miles: num(data.get("miles")),
       client_id: selectedProject?.client_id || clean(data.get("client_id")),
       project_id: selectedProjectId,
-      tax_year: num(data.get("tax_year")),
       record_status: data.get("record_status"),
       cpa_review: form.elements.cpa_review.checked,
       cpa_notes: clean(data.get("cpa_notes")),
       notes: clean(data.get("notes")),
     };
-    if (requireDuplicateConfirmation(form, "mileage", payload, id)) return;
-    await saveRow("mileage_entries", payload, id);
-    await refreshAfterSave(id ? "Mileage entry updated." : "Mileage entry saved.");
-  }
 
+    if (id) {
+      const payload = {
+        ...basePayload,
+        mileage_date: data.get("mileage_date"),
+        tax_year: num(data.get("tax_year")),
+      };
+      if (requireDuplicateConfirmation(form, "mileage", payload, id)) return;
+      await saveRow("mileage_entries", payload, id);
+      await refreshAfterSave("Mileage entry updated.");
+      return;
+    }
+
+    const dates = selectedMileageDates(form);
+    const payload = {
+      dates,
+      ...basePayload,
+      toll_amount: num(data.get("toll_amount")),
+      toll_vendor: clean(data.get("toll_vendor")) || "Tolls",
+      toll_payment_method: clean(data.get("toll_payment_method")),
+      template_id: clean(data.get("trip_template_id")),
+      template_name: form.elements.save_as_template.checked ? String(data.get("template_name")).trim() : null,
+      allow_duplicates: form.dataset.saveDuplicate === "confirmed",
+    };
+    if (!payload.allow_duplicates) {
+      const duplicateDate = dates.find((date) => duplicateFor("mileage", {
+        ...basePayload,
+        mileage_date: date,
+      }, null));
+      if (duplicateDate) {
+        showMileageDuplicateWarning(
+          form,
+          `A matching mileage entry already exists for ${shortDate(duplicateDate)}. Review the dates, or save again to include it.`
+        );
+        return;
+      }
+    }
+
+    let result;
+    if (state.demo) {
+      result = createDemoTripBatch(payload);
+    } else {
+      try {
+        result = await apiRequest("/trips/batch", { method: "POST", body: payload });
+      } catch (error) {
+        if (error.code === "POSSIBLE_DUPLICATE" && !payload.allow_duplicates) {
+          const duplicateDates = [...new Set((error.details?.duplicates || []).map((item) => item.date))];
+          const detail = duplicateDates.length
+            ? `Possible matches were found on ${duplicateDates.map(shortDate).join(", ")}. Review the dates, or save again to include them.`
+            : error.message;
+          showMileageDuplicateWarning(form, detail);
+          return;
+        }
+        throw error;
+      }
+    }
+    const mileageLabel = result.mileageCount === 1 ? "1 mileage entry" : `${result.mileageCount} mileage entries`;
+    const tollLabel = result.tollCount
+      ? (result.tollCount === 1 ? " and 1 toll expense" : ` and ${result.tollCount} toll expenses`)
+      : "";
+    await refreshAfterSave(`${mileageLabel}${tollLabel} saved.`);
+  }
   async function saveClient(form) {
     const data = new FormData(form);
     const id = form.dataset.id || null;
@@ -1997,6 +2318,19 @@
     renderRoute();
   }
 
+  async function deleteTripTemplate(button) {
+    const form = button.closest("form[data-form='mileage']");
+    const id = form?.elements.trip_template_id?.value;
+    if (!id) return;
+    const template = byId(state.trip_templates, id);
+    if (!window.confirm('Delete the saved trip "' + (template?.name || "Favorite trip") + '"? Existing mileage and toll records will not be deleted.')) return;
+    await deleteRow("trip_templates", id);
+    if (!state.demo) await loadData();
+    $("#record-dialog").close();
+    toast("Favorite trip deleted.");
+    mileageForm();
+  }
+
   async function toggleCategory(id) {
     const item = byId(state.categories, id);
     await saveRow("categories", { is_active: !item.is_active }, id);
@@ -2038,6 +2372,7 @@
       case "add-mileage": mileageForm(); break;
       case "edit-mileage": closeSearchForRecord(); mileageForm(byId(state.mileage_entries, id)); break;
       case "delete-mileage": await deleteRecord("mileage", id); break;
+      case "delete-trip-template": await deleteTripTemplate(button); break;
       case "add-client": clientForm(); break;
       case "edit-client": closeSearchForRecord(); clientForm(byId(state.clients, id)); break;
       case "delete-client": await deleteRecord("client", id); break;
@@ -2184,6 +2519,12 @@
         delete form.dataset.saveDuplicate;
         const warning = $("[data-duplicate-warning]", form);
         if (warning) warning.hidden = true;
+        const submit = $('button[type="submit"]', form);
+        if (submit?.dataset.defaultLabel) submit.textContent = submit.dataset.defaultLabel;
+      }
+      if (form?.dataset.form === "mileage" && !form.dataset.id) {
+        if (event.target.name === "mileage_date") syncNewMileageForm(form, true);
+        else updateMileagePreview(form);
       }
       if (event.target.form?.id === "report-filter-form") {
         state.reportFilters[event.target.name] = event.target.value;
@@ -2192,6 +2533,17 @@
       }
     });
     document.addEventListener("change", (event) => {
+      const mileageBatchForm = event.target.closest("form[data-form='mileage']");
+      if (mileageBatchForm && !mileageBatchForm.dataset.id) {
+        if (event.target.name === "trip_template_id") {
+          applyTripTemplate(mileageBatchForm, event.target.value);
+        }
+        if (event.target.name === "project_id" && event.target.value) {
+          const project = byId(state.projects, event.target.value);
+          if (project) mileageBatchForm.elements.client_id.value = project.client_id;
+        }
+        syncNewMileageForm(mileageBatchForm, event.target.name === "mileage_date");
+      }
       if (event.target.form?.id === "report-filter-form") {
         state.reportFilters[event.target.name] = event.target.value;
         state.reportFilters.preset = "custom";

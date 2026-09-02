@@ -10,6 +10,10 @@ const RECORD_FIELDS = {
   categories: ["name", "tax_line", "color", "is_active", "sort_order"],
   clients: ["name", "company", "email", "phone", "notes", "is_active"],
   projects: ["client_id", "name", "description", "start_date", "end_date", "is_active"],
+  trip_templates: [
+    "name", "origin", "destination", "business_purpose", "miles", "toll_amount", "toll_vendor",
+    "payment_method", "client_id", "project_id", "notes", "is_active",
+  ],
   expenses: [
     "expense_date", "vendor", "amount", "category_id", "description", "business_purpose",
     "payment_method", "client_id", "project_id", "tax_year", "reimbursable", "reimbursed",
@@ -153,6 +157,20 @@ export function normalizeRecordPayload(table: RecordTable, body: JsonRecord): No
       put(result, "end_date", dateValue(body, "end_date", true));
       put(result, "is_active", booleanValue(body, "is_active"));
       break;
+    case "trip_templates":
+      put(result, "name", requiredText(body, "name", 100));
+      put(result, "origin", requiredText(body, "origin", 240));
+      put(result, "destination", requiredText(body, "destination", 240));
+      put(result, "business_purpose", requiredText(body, "business_purpose", 500));
+      put(result, "miles", numberValue(body, "miles", 0.01, 999_999.99));
+      put(result, "toll_amount", numberValue(body, "toll_amount", 0, 999_999.99));
+      put(result, "toll_vendor", optionalText(body, "toll_vendor", 180));
+      put(result, "payment_method", optionalText(body, "payment_method", 100));
+      put(result, "client_id", idValue(body, "client_id", true));
+      put(result, "project_id", idValue(body, "project_id", true));
+      put(result, "notes", optionalText(body, "notes"));
+      put(result, "is_active", booleanValue(body, "is_active"));
+      break;
     case "expenses":
       put(result, "expense_date", dateValue(body, "expense_date"));
       put(result, "vendor", requiredText(body, "vendor", 180));
@@ -220,6 +238,7 @@ const REQUIRED_FIELDS: Record<RecordTable, readonly string[]> = {
   categories: ["name", "color", "is_active", "sort_order"],
   clients: ["name", "is_active"],
   projects: ["client_id", "name", "is_active"],
+  trip_templates: ["name", "origin", "destination", "business_purpose", "miles", "toll_amount", "is_active"],
   expenses: [
     "expense_date", "vendor", "amount", "tax_year", "reimbursable", "reimbursed",
     "deductibility_percent", "record_status", "cpa_review",
@@ -269,7 +288,7 @@ async function validateProjectRelationship(
     if (!client) throw new AdminError(422, "INVALID_RECORD", "The selected client no longer exists.");
     return;
   }
-  if (!(["expenses", "income", "mileage_entries"] as RecordTable[]).includes(table)) return;
+  if (!(["expenses", "income", "mileage_entries", "trip_templates"] as RecordTable[]).includes(table)) return;
   let clientId = payload.client_id as string | null | undefined;
   let projectId = payload.project_id as string | null | undefined;
   if (id && (clientId === undefined || projectId === undefined)) {
@@ -294,6 +313,7 @@ export async function bookkeepingData(env: Env): Promise<Response> {
     env.DB.prepare("SELECT * FROM categories ORDER BY sort_order, lower(name)"),
     env.DB.prepare("SELECT * FROM clients ORDER BY lower(name)"),
     env.DB.prepare("SELECT * FROM projects ORDER BY lower(name)"),
+    env.DB.prepare("SELECT * FROM trip_templates WHERE is_active = 1 ORDER BY lower(name)"),
     env.DB.prepare("SELECT * FROM expenses ORDER BY expense_date DESC, created_at DESC"),
     env.DB.prepare("SELECT * FROM income ORDER BY income_date DESC, created_at DESC"),
     env.DB.prepare("SELECT * FROM income_payments ORDER BY payment_date DESC, created_at DESC"),
@@ -311,11 +331,12 @@ export async function bookkeepingData(env: Env): Promise<Response> {
     categories: results[1]?.results ?? [],
     clients: results[2]?.results ?? [],
     projects: results[3]?.results ?? [],
-    expenses: results[4]?.results ?? [],
-    income: results[5]?.results ?? [],
-    income_payments: results[6]?.results ?? [],
-    mileage_entries: results[7]?.results ?? [],
-    attachments: results[8]?.results ?? [],
+    trip_templates: results[4]?.results ?? [],
+    expenses: results[5]?.results ?? [],
+    income: results[6]?.results ?? [],
+    income_payments: results[7]?.results ?? [],
+    mileage_entries: results[8]?.results ?? [],
+    attachments: results[9]?.results ?? [],
   });
 }
 
