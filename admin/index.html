@@ -10,7 +10,8 @@
   <meta name="description" content="Private bookkeeping and reporting for Career Steps Consulting.">
   <link rel="icon" type="image/png" href="../assets/images/career-steps-logo.png">
   <link rel="stylesheet" href="assets/admin.css">
-  <link rel="stylesheet" href="assets/invoice-ui.css">
+  <link rel="stylesheet" href="assets/invoice-ui.css?v=20260904.2">
+  <link rel="stylesheet" href="assets/invoice-preview.css?v=20260904.2">
 </head>
 <body>
   <a class="skip-link" href="#admin-main">Skip to main content</a>
@@ -141,8 +142,8 @@
     </div>
   </div>
 
-  <dialog class="record-dialog" id="record-dialog" aria-labelledby="dialog-title"></dialog>
-  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-dialog-title"></dialog>
+  <dialog class="record-dialog" id="record-dialog" aria-labelledby="dialog-title" closedby="closerequest"></dialog>
+  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-dialog-title" closedby="closerequest"></dialog>
   <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
 
 
@@ -150,8 +151,9 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
   <script src="assets/config.js"></script>
-  <script src="assets/invoice-docx.js"></script>
-  <script src="assets/invoice-ui.js"></script>
-  <script src="assets/app.js"></script>
+  <script src="assets/invoice-docx.js?v=20260904.2"></script>
+  <script src="assets/invoice-preview.js?v=20260904.2"></script>
+  <script src="assets/invoice-ui.js?v=20260904.2"></script>
+  <script src="assets/app.js?v=20260904.2"></script>
 </body>
 </html>

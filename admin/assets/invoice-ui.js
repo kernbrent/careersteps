@@ -240,7 +240,7 @@
           <div class="form-section"><h3>Save for next time</h3><div class="check-grid"><label><input name="save_as_profile" type="checkbox"> Save these details as a reusable starting point</label></div><div class="form-grid" data-profile-name hidden><label class="field field-grow">Starting-point name<input name="save_profile_name" maxlength="160" placeholder="Metro Relief weekly consulting"></label></div><label class="field field-wide">Internal notes<textarea name="notes" rows="2">${escapeHtml(record.notes || "")}</textarea></label></div>
           <div class="duplicate-warning" data-invoice-message hidden></div>
           <p class="form-message invoice-submit-message" data-form-error role="alert" hidden></p>
-          <div class="form-footer"><button class="secondary-button" type="button" data-action="close-dialog">Cancel</button><button class="button" type="submit">${item ? "Save invoice changes" : "Create invoice"}</button></div>
+          <div class="form-footer"><button class="secondary-button" type="button" data-action="close-dialog">Cancel</button><button class="secondary-button" type="button" data-action="preview-invoice">Preview invoice</button><button class="button" type="submit">${item ? "Save invoice changes" : "Create invoice"}</button></div>
         </form>`,
         "dialog-wide invoice-dialog"
       );
@@ -447,6 +447,116 @@
       const selected = form.elements.client_logo_artifact_id.value;
       if (!selected) throw new Error("Choose a saved client logo, upload one, or enter its HTTPS URL.");
       return selected;
+    }
+
+    let invoicePreviewObjectUrls = [];
+
+    function releaseInvoicePreviewUrls() {
+      invoicePreviewObjectUrls.forEach((url) => URL.revokeObjectURL(url));
+      invoicePreviewObjectUrls = [];
+    }
+
+    function invoicePreviewBlobUrl(blob) {
+      const url = URL.createObjectURL(blob);
+      invoicePreviewObjectUrls.push(url);
+      return url;
+    }
+
+    function invoicePreviewDraft(form) {
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        throw new Error("Complete the highlighted required fields before previewing the invoice.");
+      }
+      const items = collectLines(form).map((line) => ({
+        ...line,
+        line_total: line.quantity * line.unit_rate,
+      }));
+      if (form.elements.period_end.value < form.elements.period_start.value) {
+        throw new Error("The invoice finish date must be on or after the start date.");
+      }
+      if (!items.length || items.some((line) => !line.work_type || line.quantity <= 0 || line.unit_rate < 0)) {
+        throw new Error("Complete every billing line before previewing.");
+      }
+      const total = items.reduce((sum, line) => sum + line.line_total, 0);
+      if (total <= 0) throw new Error("The invoice total must be greater than zero.");
+      return {
+        client_id: form.elements.client_id.value,
+        client_name: clientName(form.elements.client_id.value),
+        project_name: projectName(form.elements.project_id.value),
+        invoice_number: form.elements.invoice_number.value.trim(),
+        created_date: form.elements.created_date.value,
+        period_start: form.elements.period_start.value,
+        period_end: form.elements.period_end.value,
+        due_date: clean(form.elements.due_date.value),
+        contract_name: form.elements.contract_name.value.trim(),
+        purchase_order: clean(form.elements.purchase_order.value),
+        summary: clean(form.elements.summary.value),
+        payment_terms: clean(form.elements.payment_terms.value),
+        payment_instructions: clean(form.elements.payment_instructions.value),
+        include_client_logo: form.elements.include_client_logo.checked,
+        currency_code: state.settings?.currency_code || "USD",
+        total_amount: total,
+        items,
+      };
+    }
+
+    async function invoicePreviewClientLogo(form) {
+      if (!form.elements.include_client_logo.checked) return { url: "", pending: false };
+      const file = form.elements.client_logo_file.files[0];
+      if (file) return { url: invoicePreviewBlobUrl(file), pending: false };
+      const sourceUrl = form.elements.client_logo_url.value.trim();
+      if (sourceUrl) {
+        if (!/^https:\/\//i.test(sourceUrl)) throw new Error("The client logo URL must begin with https://.");
+        return { url: "", pending: true };
+      }
+      const logoId = form.elements.client_logo_artifact_id.value;
+      const artifact = state.client_artifacts.find((entry) => entry.id === logoId);
+      if (!artifact) throw new Error("Choose a saved client logo, upload one, or enter its HTTPS URL before previewing.");
+      if (state.demo && artifact.source_url) return { url: "", pending: true };
+      return { url: invoicePreviewBlobUrl(await artifactBlob(artifact)), pending: false };
+    }
+
+    function ensureInvoicePreviewDialog() {
+      let dialog = $("#invoice-preview-dialog");
+      if (dialog) return dialog;
+      dialog = document.createElement("dialog");
+      dialog.id = "invoice-preview-dialog";
+      dialog.className = "invoice-preview-dialog";
+      dialog.setAttribute("closedby", "closerequest");
+      dialog.setAttribute("aria-labelledby", "invoice-preview-title");
+      dialog.innerHTML = `<div class="invoice-preview-toolbar"><div><strong id="invoice-preview-title">Invoice preview</strong><span>Nothing has been saved. Close this preview to continue editing.</span></div><button class="button" type="button" data-action="close-invoice-preview">Back to invoice</button></div><div class="invoice-preview-scroll" data-invoice-preview-body></div>`;
+      dialog.addEventListener("close", releaseInvoicePreviewUrls);
+      document.body.append(dialog);
+      return dialog;
+    }
+
+    async function previewInvoice(form, button) {
+      if (!window.CareerStepsInvoicePreview?.render) throw new Error("The invoice preview could not be loaded. Refresh the portal and try again.");
+      const invoice = invoicePreviewDraft(form);
+      const originalLabel = button.textContent;
+      button.disabled = true;
+      button.textContent = "Preparing preview...";
+      releaseInvoicePreviewUrls();
+      try {
+        const [signature, clientLogo] = await Promise.all([
+          brandingBlob("signature"),
+          invoicePreviewClientLogo(form),
+        ]);
+        const dialog = ensureInvoicePreviewDialog();
+        $("[data-invoice-preview-body]", dialog).innerHTML = window.CareerStepsInvoicePreview.render(invoice, {
+          businessLogoUrl: "../assets/images/career-steps-logo.png",
+          clientLogoUrl: clientLogo.url,
+          clientLogoPending: clientLogo.pending,
+          signatureUrl: invoicePreviewBlobUrl(signature),
+        });
+        if (!dialog.open) dialog.showModal();
+      } catch (error) {
+        releaseInvoicePreviewUrls();
+        throw error;
+      } finally {
+        button.disabled = false;
+        button.textContent = originalLabel;
+      }
     }
 
     async function saveInvoice(form) {
@@ -669,6 +779,8 @@
       if (action === "add-invoice-line") { const form = button.closest("form"); $('[data-invoice-lines]', form).insertAdjacentHTML("beforeend", lineEditorRow({}, $$('[data-invoice-line]', form).length)); refreshInvoiceForm(form); return true; }
       if (action === "remove-invoice-line") { const form = button.closest("form"); if ($$('[data-invoice-line]', form).length > 1) button.closest('[data-invoice-line]').remove(); refreshInvoiceForm(form); return true; }
       if (action === "choose-invoice-folder") { await chooseFolderForForm(button.closest("form")); return true; }
+      if (action === "preview-invoice") { await previewInvoice(button.closest("form"), button); return true; }
+      if (action === "close-invoice-preview") { $("#invoice-preview-dialog")?.close(); return true; }
       if (action === "view-client-artifact") { await viewArtifact(state.client_artifacts.find((entry) => entry.id === id)); return true; }
       if (action === "delete-client-artifact") {
         const artifact = state.client_artifacts.find((entry) => entry.id === id);

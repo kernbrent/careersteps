@@ -2668,6 +2668,15 @@
     input.focus({ preventScroll: true });
   }
 
+  function preventDialogBackdropDismissal() {
+    document.querySelectorAll("dialog").forEach((dialog) => dialog.setAttribute("closedby", "closerequest"));
+    document.addEventListener("click", (event) => {
+      if (!(event.target instanceof HTMLDialogElement) || !event.target.open) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }, true);
+  }
+
   function bindGlobalEvents() {
     window.addEventListener("hashchange", () => {
       if (state.user) renderRoute();
@@ -2763,12 +2772,7 @@
         $("#auth-message").textContent = "You have been signed out.";
       }
     });
-    $("#record-dialog").addEventListener("click", (event) => {
-      if (event.target === $("#record-dialog")) $("#record-dialog").close();
-    });
-    $("#search-dialog").addEventListener("click", (event) => {
-      if (event.target === $("#search-dialog")) $("#search-dialog").close();
-    });
+    preventDialogBackdropDismissal();
   }
 
   init().catch((error) => {
