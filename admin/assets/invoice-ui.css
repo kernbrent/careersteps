@@ -147,3 +147,16 @@
   color: var(--muted);
   font-size: .8rem;
 }
+
+.folder-reference-grid { margin-top: 1rem; }
+
+.invoice-submit-message {
+  margin: 0 1.35rem 1rem;
+  padding: .8rem 1rem;
+  color: #7d1825;
+  background: #fff0f2;
+  border: 1px solid #e5a9b2;
+  border-radius: .7rem;
+  font-size: .84rem;
+  font-weight: 700;
+}

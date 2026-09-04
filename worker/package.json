@@ -15,7 +15,7 @@
     "dev": "npm run assets:sync && wrangler dev --local"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "5.20260901.1",
+    "@cloudflare/workers-types": "5.20260904.1",
     "@types/node": "26.2.0",
     "typescript": "7.0.2",
     "vitest": "4.1.10",

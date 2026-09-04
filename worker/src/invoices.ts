@@ -38,6 +38,10 @@ export type InvoiceInput = {
   items: InvoiceItemInput[];
   total_amount: number;
   save_profile_name: string | null;
+  mark_paid_on_create: boolean;
+  initial_payment_date: string | null;
+  initial_payment_method: string | null;
+  initial_payment_reference: string | null;
 };
 
 type ExistingInvoice = {
@@ -159,6 +163,14 @@ export function normalizeInvoicePayload(body: JsonRecord): InvoiceInput {
   if (includeClientLogo && !clientLogoArtifactId) {
     throw new AdminError(422, "INVALID_INVOICE", "Choose or upload a client logo before including it.");
   }
+  const markPaidValue = body.mark_paid_on_create;
+  if (markPaidValue !== undefined && typeof markPaidValue !== "boolean") {
+    throw new AdminError(422, "INVALID_INVOICE", "mark_paid_on_create must be true or false.");
+  }
+  const markPaidOnCreate = markPaidValue === true;
+  const initialPaymentDate = markPaidOnCreate ? date(body, "initial_payment_date")! : null;
+  const initialPaymentMethod = markPaidOnCreate ? text(body, "initial_payment_method", 100, true) : null;
+  const initialPaymentReference = markPaidOnCreate ? text(body, "initial_payment_reference", 180, true) : null;
   return {
     client_id: id(body, "client_id")!,
     project_id: id(body, "project_id", true),
@@ -181,6 +193,10 @@ export function normalizeInvoicePayload(body: JsonRecord): InvoiceInput {
     items,
     total_amount: totalAmount,
     save_profile_name: text(body, "save_profile_name", 160, true),
+    mark_paid_on_create: markPaidOnCreate,
+    initial_payment_date: initialPaymentDate,
+    initial_payment_method: initialPaymentMethod,
+    initial_payment_reference: initialPaymentReference,
   };
 }
 
@@ -269,8 +285,8 @@ function profileUpsert(env: Env, payload: InvoiceInput, now: string) {
     `INSERT INTO invoice_profiles (
        id, owner_id, client_id, project_id, name, contract_name, summary_template, payment_terms,
        payment_instructions, purchase_order, include_client_logo, client_logo_artifact_id,
-       summary_source_artifact_id, items_json, notes, is_active, created_at, updated_at
-     ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, 1, ?16, ?16)
+       summary_source_artifact_id, items_json, local_folder_name, notes, is_active, created_at, updated_at
+     ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, 1, ?17, ?17)
      ON CONFLICT DO UPDATE SET
        project_id = excluded.project_id,
        contract_name = excluded.contract_name,
@@ -282,6 +298,7 @@ function profileUpsert(env: Env, payload: InvoiceInput, now: string) {
        client_logo_artifact_id = excluded.client_logo_artifact_id,
        summary_source_artifact_id = excluded.summary_source_artifact_id,
        items_json = excluded.items_json,
+       local_folder_name = excluded.local_folder_name,
        notes = excluded.notes,
        is_active = 1,
        updated_at = excluded.updated_at`,
@@ -289,7 +306,7 @@ function profileUpsert(env: Env, payload: InvoiceInput, now: string) {
     profileId, OWNER_ID, payload.client_id, payload.project_id, payload.save_profile_name,
     payload.contract_name, payload.summary, payload.payment_terms, payload.payment_instructions,
     payload.purchase_order, payload.include_client_logo, payload.client_logo_artifact_id,
-    payload.summary_source_artifact_id, itemsJson, payload.notes, now,
+    payload.summary_source_artifact_id, itemsJson, payload.local_folder_name, payload.notes, now,
   );
 }
 
@@ -323,12 +340,27 @@ export async function createInvoice(request: Request, env: Env): Promise<Respons
     invoiceInsert(env, invoiceId, incomeId, payload, now),
     ...payload.items.map((item, index) => itemInsert(env, invoiceId, item, index, now)),
   ];
+  if (payload.mark_paid_on_create) {
+    statements.push(
+      env.DB.prepare(
+        `INSERT INTO income_payments (
+           id, owner_id, income_id, payment_date, amount, payment_method, reference_number, notes, created_at, updated_at
+         ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, NULL, ?8, ?8)`,
+      ).bind(
+        crypto.randomUUID(), OWNER_ID, incomeId, payload.initial_payment_date, payload.total_amount,
+        payload.initial_payment_method, payload.initial_payment_reference, now,
+      ),
+    );
+  }
   const profile = profileUpsert(env, payload, now);
   if (profile) statements.push(profile);
   statements.push(
     env.DB.prepare(
       "INSERT INTO audit_events (id, entity_type, entity_id, event_type, metadata_json, created_at) VALUES (?1, 'invoices', ?2, 'created', ?3, ?4)",
-    ).bind(crypto.randomUUID(), invoiceId, JSON.stringify({ income_id: incomeId }), now),
+    ).bind(
+      crypto.randomUUID(), invoiceId,
+      JSON.stringify({ income_id: incomeId, marked_paid_on_create: payload.mark_paid_on_create }), now,
+    ),
   );
   try {
     await env.DB.batch(statements);
@@ -340,6 +372,9 @@ export async function createInvoice(request: Request, env: Env): Promise<Respons
 
 export async function updateInvoice(request: Request, env: Env, invoiceId: string): Promise<Response> {
   const payload = normalizeInvoicePayload(await readAdminJson(request));
+  if (payload.mark_paid_on_create) {
+    throw new AdminError(422, "INVALID_INVOICE", "Use the Mark paid action for an existing invoice.");
+  }
   const client = await validateRelationships(env, payload);
   const existing = await env.DB.prepare(
     `SELECT invoices.id, invoices.income_id, invoices.status,

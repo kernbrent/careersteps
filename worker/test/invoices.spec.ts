@@ -56,6 +56,8 @@ describe("invoice validation", () => {
     });
     expect(invoice.total_amount).toBe(1037.5);
     expect(invoice.include_client_logo).toBe(0);
+    expect(invoice.local_folder_name).toBe("Metro Relief Billing");
+    expect(invoice.mark_paid_on_create).toBe(false);
   });
 
   it("rejects a reversed billing period and an invalid due date", () => {
@@ -91,5 +93,33 @@ describe("invoice validation", () => {
         unit_rate: 0,
       }],
     })).toThrow(/greater than zero/i);
+  });
+
+  it("supports an invoice that was fully paid when created", () => {
+    const invoice = normalizeInvoicePayload({
+      ...baseInvoice(),
+      payment_terms: "Due on Receipt",
+      due_date: "2026-09-04",
+      mark_paid_on_create: true,
+      initial_payment_date: "2026-09-04",
+      initial_payment_method: "ACH / bank transfer",
+      initial_payment_reference: "CONFIRM-123",
+    });
+    expect(invoice).toMatchObject({
+      payment_terms: "Due on Receipt",
+      due_date: "2026-09-04",
+      mark_paid_on_create: true,
+      initial_payment_date: "2026-09-04",
+      initial_payment_method: "ACH / bank transfer",
+      initial_payment_reference: "CONFIRM-123",
+    });
+  });
+
+  it("requires a payment date when an invoice is marked paid on creation", () => {
+    expect(() => normalizeInvoicePayload({
+      ...baseInvoice(),
+      mark_paid_on_create: true,
+      initial_payment_date: null,
+    })).toThrow(/payment_date/i);
   });
 });

@@ -200,6 +200,15 @@
     }
   }
 
+  function showFormError(form, message = "") {
+    const target = form ? $("[data-form-error]", form) : null;
+    if (!target) return false;
+    target.textContent = message;
+    target.hidden = !message;
+    if (message) target.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    return true;
+  }
+
   function demoDate(month, day) {
     const year = currentYear();
     return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -2594,12 +2603,15 @@
     };
     const handler = handlers[form.dataset.form] || invoicePortal?.formHandler(form.dataset.form);
     if (!handler) return;
-    setBusy(form, true);
+    showFormError(form);
+    setBusy(form, true, form.dataset.form === "invoice" ? "Saving invoice..." : "Saving...");
     try {
       await handler(form);
     } catch (error) {
       console.error(error);
-      toast(friendlyError(error, "The record could not be saved."), "error");
+      const message = friendlyError(error, "The record could not be saved.");
+      showFormError(form, message);
+      toast(message, "error");
       setBusy(form, false);
     }
   }
@@ -2674,7 +2686,9 @@
           await handleAction(actionButton);
         } catch (error) {
           console.error(error);
-          toast(friendlyError(error), "error");
+          const message = friendlyError(error);
+          showFormError(actionButton.closest("form"), message);
+          toast(message, "error");
         }
       }
     });

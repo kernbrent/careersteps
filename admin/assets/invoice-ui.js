@@ -178,15 +178,16 @@
         created_date: createdDate,
         period_start: createdDate,
         period_end: createdDate,
-        due_date: addDays(createdDate, 30),
+        due_date: createdDate,
         contract_name: profile?.contract_name || "",
         purchase_order: profile?.purchase_order || "",
         summary: profile?.summary_template || "",
-        payment_terms: profile?.payment_terms || "Net 30",
+        payment_terms: profile?.payment_terms || "Due on Receipt",
         payment_instructions: profile?.payment_instructions || "",
         include_client_logo: profile?.include_client_logo || 0,
         client_logo_artifact_id: profile?.client_logo_artifact_id || "",
         summary_source_artifact_id: profile?.summary_source_artifact_id || "",
+        local_folder_name: profile?.local_folder_name || "",
         notes: profile?.notes || "",
       };
       const lines = item ? itemRows(item.id) : (profile ? profileItems(profile) : [{ billing_type: "fixed", cadence: "weekly", work_type: "Consulting Services", description: "", quantity: 1, unit_rate: "", line_total: 0 }]);
@@ -194,7 +195,7 @@
       dialogFrame(
         item ? `Edit ${record.invoice_number}` : "Create client invoice",
         "Enter the variable details, review the calculated total, then generate the Word document.",
-        `<form class="record-form invoice-form" data-form="invoice" data-id="${item?.id || ""}">
+        `<form class="record-form invoice-form" data-form="invoice" data-id="${item?.id || ""}" novalidate>
           <div class="form-section invoice-starting-point"><h3>Start from saved details</h3><div class="form-grid">
             <label class="field field-grow">Saved starting point<select name="profile_id"><option value="">Blank invoice</option>${state.invoice_profiles.map((entry) => `<option value="${entry.id}" ${entry.id === record.profile_id ? "selected" : ""}>${escapeHtml(clientName(entry.client_id))} - ${escapeHtml(entry.name)}</option>`).join("")}</select></label>
             <p class="field-help">Choose a saved form to fill the client, contract, billing lines, logo, and payment details.</p>
@@ -225,11 +226,21 @@
               <label class="field field-grow file-field">Upload a new logo<input name="client_logo_file" type="file" accept="image/png,image/jpeg"><small>PNG or JPG, up to 15 MB.</small></label>
               <label class="field field-wide">Or logo URL<input name="client_logo_url" type="url" placeholder="https://..."><small>Leave both blank to reuse the saved logo selected above.</small></label>
             </div>
-            <div class="client-folder-row"><div><strong data-folder-name>Client folder: checking this device...</strong><small>The folder permission remains local to this browser.</small></div><button class="secondary-button" type="button" data-action="choose-invoice-folder">Choose client folder</button></div>
+            <div class="form-grid folder-reference-grid"><label class="field field-wide">Client folder reference<input name="local_folder_name" maxlength="240" value="${escapeHtml(record.local_folder_name || "")}" placeholder="Metro Relief / Billing"><small>You can type a folder name or path as a reference even when direct folder access is unavailable.</small></label></div>
+            <div class="client-folder-row"><div><strong data-folder-name>Client folder: checking this device...</strong><small data-folder-help>The folder permission remains local to this browser.</small></div><button class="secondary-button" type="button" data-action="choose-invoice-folder">Choose client folder</button></div>
           </div>
+          ${item ? "" : `<div class="form-section"><h3>Payment status</h3>
+            <div class="check-grid"><label><input name="mark_paid_on_create" type="checkbox"> This invoice has already been paid</label></div>
+            <div class="form-grid" data-initial-payment-fields hidden>
+              <label class="field">Payment date<input name="initial_payment_date" type="date" value="${escapeHtml(createdDate)}"></label>
+              <label class="field">Payment method<select name="initial_payment_method">${context.methodOptions("")}</select></label>
+              <label class="field field-grow">Payment reference<input name="initial_payment_reference" maxlength="180" placeholder="Check, transfer, or confirmation number"></label>
+            </div>
+          </div>`}
           <div class="form-section"><h3>Save for next time</h3><div class="check-grid"><label><input name="save_as_profile" type="checkbox"> Save these details as a reusable starting point</label></div><div class="form-grid" data-profile-name hidden><label class="field field-grow">Starting-point name<input name="save_profile_name" maxlength="160" placeholder="Metro Relief weekly consulting"></label></div><label class="field field-wide">Internal notes<textarea name="notes" rows="2">${escapeHtml(record.notes || "")}</textarea></label></div>
           <div class="duplicate-warning" data-invoice-message hidden></div>
-          <div class="form-footer"><button class="secondary-button" type="button" data-action="close-dialog">Cancel</button><button class="button" type="submit">${item ? "Save invoice changes" : "Create pending invoice"}</button></div>
+          <p class="form-message invoice-submit-message" data-form-error role="alert" hidden></p>
+          <div class="form-footer"><button class="secondary-button" type="button" data-action="close-dialog">Cancel</button><button class="button" type="submit">${item ? "Save invoice changes" : "Create invoice"}</button></div>
         </form>`,
         "dialog-wide invoice-dialog"
       );
@@ -293,6 +304,15 @@
       $('[data-client-logo-fields]', form).hidden = !form.elements.include_client_logo.checked;
       $('[data-profile-name]', form).hidden = !form.elements.save_as_profile.checked;
       form.elements.save_profile_name.required = form.elements.save_as_profile.checked;
+      const paidCheckbox = form.elements.mark_paid_on_create;
+      const paymentFields = $('[data-initial-payment-fields]', form);
+      if (paidCheckbox && paymentFields) {
+        paymentFields.hidden = !paidCheckbox.checked;
+        form.elements.initial_payment_date.required = paidCheckbox.checked;
+        if (paidCheckbox.checked && !form.elements.initial_payment_date.value) {
+          form.elements.initial_payment_date.value = form.elements.created_date.value;
+        }
+      }
       $$('[data-action="remove-invoice-line"]', form).forEach((button) => { button.disabled = $$('[data-invoice-line]', form).length === 1; });
     }
 
@@ -319,6 +339,7 @@
       form.elements.include_client_logo.checked = Boolean(profile.include_client_logo);
       form.elements.client_logo_artifact_id.value = profile.client_logo_artifact_id || "";
       form.elements.summary_source_artifact_id.value = profile.summary_source_artifact_id || "";
+      form.elements.local_folder_name.value = profile.local_folder_name || "";
       form.elements.notes.value = profile.notes || "";
       $('[data-invoice-lines]', form).innerHTML = profileItems(profile).map(lineEditorRow).join("");
       refreshInvoiceForm(form);
@@ -355,21 +376,42 @@
     async function chooseFolderForForm(form) {
       const clientId = form.elements.client_id.value;
       if (!clientId) throw new Error("Choose a client before selecting its folder.");
+      const label = $('[data-folder-name]', form);
+      const help = $('[data-folder-help]', form);
       if (!window.showDirectoryPicker) {
-        toast("This browser will download Word files instead of saving directly to a client folder.", "info");
+        label.textContent = "Direct folder saving is unavailable in this browser";
+        help.textContent = "Enter a folder reference above. Generated Word invoices will download so you can move them there.";
         return null;
       }
-      const handle = await window.showDirectoryPicker({ id: `careersteps-${clientId}`, mode: "readwrite" });
-      await storeFolderHandle(clientId, handle);
-      $('[data-folder-name]', form).textContent = `Client folder: ${handle.name}`;
-      return handle;
+      try {
+        const handle = await window.showDirectoryPicker({ id: `careersteps-${clientId}`, mode: "readwrite" });
+        await storeFolderHandle(clientId, handle);
+        form.elements.local_folder_name.value = handle.name;
+        label.textContent = `Client folder: ${handle.name}`;
+        help.textContent = "Direct saving is enabled for this client on this device.";
+        return handle;
+      } catch (error) {
+        if (error?.name === "AbortError") {
+          label.textContent = "Client folder selection was canceled";
+          help.textContent = "No changes were made. You can type a folder reference above or try again.";
+          return null;
+        }
+        throw error;
+      }
     }
 
     async function showStoredFolderName(form) {
       const label = $('[data-folder-name]', form);
+      const help = $('[data-folder-help]', form);
       if (!label) return;
+      if (!window.showDirectoryPicker) {
+        label.textContent = "Direct folder saving is unavailable in this browser";
+        if (help) help.textContent = "Enter a folder reference above. Generated Word invoices will download normally.";
+        return;
+      }
       const handle = await folderHandle(form.elements.client_id.value);
       label.textContent = handle ? `Client folder: ${handle.name}` : "Client folder: not chosen yet";
+      if (help) help.textContent = handle ? "Direct saving is enabled for this client on this device." : "Choose a folder once, or enter a folder reference above.";
     }
 
     async function uploadArtifact({ type, clientId, projectId = "", invoiceId = "", displayName, notes = "", file = null, sourceUrl = "" }) {
@@ -404,6 +446,10 @@
     }
 
     async function saveInvoice(form) {
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        throw new Error("Complete the highlighted required fields before creating the invoice.");
+      }
       const id = form.dataset.id || null;
       const logoId = await ensureLogo(form);
       const handle = await folderHandle(form.elements.client_id.value).catch(() => null);
@@ -424,10 +470,14 @@
         include_client_logo: form.elements.include_client_logo.checked,
         client_logo_artifact_id: logoId,
         summary_source_artifact_id: clean(form.elements.summary_source_artifact_id.value),
-        local_folder_name: handle?.name || null,
+        local_folder_name: handle?.name || clean(form.elements.local_folder_name.value),
         notes: clean(form.elements.notes.value),
         items: collectLines(form),
         save_profile_name: form.elements.save_as_profile.checked ? form.elements.save_profile_name.value.trim() : null,
+        mark_paid_on_create: !id && Boolean(form.elements.mark_paid_on_create?.checked),
+        initial_payment_date: !id && form.elements.mark_paid_on_create?.checked ? form.elements.initial_payment_date.value : null,
+        initial_payment_method: !id && form.elements.mark_paid_on_create?.checked ? clean(form.elements.initial_payment_method.value) : null,
+        initial_payment_reference: !id && form.elements.mark_paid_on_create?.checked ? clean(form.elements.initial_payment_reference.value) : null,
       };
       if (payload.period_end < payload.period_start) throw new Error("The invoice finish date must be on or after the start date.");
       if (!payload.items.length || payload.items.some((line) => !line.work_type || line.quantity <= 0 || line.unit_rate < 0)) throw new Error("Complete every billing line before saving.");
@@ -447,10 +497,16 @@
         payload.items.forEach((line, index) => state.invoice_items.push({ id: uid(), owner_id: state.user.id, invoice_id: invoice.id, sort_order: index, ...line, line_total: line.quantity * line.unit_rate, created_at: stamp, updated_at: stamp }));
         const income = state.income.find((entry) => entry.id === invoice.income_id);
         Object.assign(income, { income_date: payload.created_date, client_id: payload.client_id, project_id: payload.project_id, payer_name: clientName(payload.client_id), invoice_number: payload.invoice_number, invoice_date: payload.created_date, due_date: payload.due_date, amount: total, description: payload.contract_name, tax_year: Number(payload.created_date.slice(0, 4)), notes: payload.notes, updated_at: stamp });
+        if (!id && payload.mark_paid_on_create) {
+          state.income_payments.push({ id: uid(), owner_id: state.user.id, income_id: invoice.income_id, payment_date: payload.initial_payment_date, amount: total, payment_method: payload.initial_payment_method, reference_number: payload.initial_payment_reference, notes: null, created_at: stamp, updated_at: stamp });
+          invoice.status = "paid";
+          invoice.paid_at = `${payload.initial_payment_date}T12:00:00.000Z`;
+          income.payment_status = "paid";
+        }
         if (payload.save_profile_name) {
           const existingProfile = state.invoice_profiles.find((entry) => entry.client_id === payload.client_id && entry.name.toLowerCase() === payload.save_profile_name.toLowerCase());
           const profile = existingProfile || { id: uid(), owner_id: state.user.id, client_id: payload.client_id, created_at: stamp };
-          Object.assign(profile, { project_id: payload.project_id, name: payload.save_profile_name, contract_name: payload.contract_name, summary_template: payload.summary, payment_terms: payload.payment_terms, payment_instructions: payload.payment_instructions, purchase_order: payload.purchase_order, include_client_logo: payload.include_client_logo ? 1 : 0, client_logo_artifact_id: payload.client_logo_artifact_id, summary_source_artifact_id: payload.summary_source_artifact_id, items_json: JSON.stringify(payload.items), notes: payload.notes, is_active: 1, updated_at: stamp });
+          Object.assign(profile, { project_id: payload.project_id, name: payload.save_profile_name, contract_name: payload.contract_name, summary_template: payload.summary, payment_terms: payload.payment_terms, payment_instructions: payload.payment_instructions, purchase_order: payload.purchase_order, include_client_logo: payload.include_client_logo ? 1 : 0, client_logo_artifact_id: payload.client_logo_artifact_id, summary_source_artifact_id: payload.summary_source_artifact_id, items_json: JSON.stringify(payload.items), local_folder_name: payload.local_folder_name, notes: payload.notes, is_active: 1, updated_at: stamp });
           if (!existingProfile) state.invoice_profiles.push(profile);
         }
       } else {
@@ -458,7 +514,12 @@
         await loadData();
       }
       $("#record-dialog").close();
-      toast(id ? "Invoice and linked Income record updated." : "Pending invoice created and added to Income.");
+      toast(id
+        ? "Invoice and linked Income record updated."
+        : payload.mark_paid_on_create
+          ? "Paid invoice created and added to Income."
+          : "Pending invoice created and added to Income.");
+      location.hash = "#/invoices";
       renderRoute();
     }
 
@@ -632,7 +693,18 @@
       if (invoice) {
         if (event.target.name === "client_id") updateClientChoices(invoice);
         if (event.target.name === "profile_id" && event.target.value) applyProfile(invoice, event.target.value);
-        if (event.target.name === "created_date" && invoice.elements.due_date.value) invoice.elements.due_date.value = addDays(event.target.value, 30);
+        if (event.target.name === "created_date") {
+          const netMatch = invoice.elements.payment_terms.value.trim().match(/^Net\s+(\d+)$/i);
+          invoice.elements.due_date.value = netMatch
+            ? addDays(event.target.value, Number(netMatch[1]))
+            : event.target.value;
+          if (invoice.elements.initial_payment_date) invoice.elements.initial_payment_date.value = event.target.value;
+        }
+        if (event.target.name === "payment_terms") {
+          const netMatch = event.target.value.trim().match(/^Net\s+(\d+)$/i);
+          if (/^Due on Receipt$/i.test(event.target.value.trim())) invoice.elements.due_date.value = invoice.elements.created_date.value;
+          else if (netMatch) invoice.elements.due_date.value = addDays(invoice.elements.created_date.value, Number(netMatch[1]));
+        }
         refreshInvoiceForm(invoice);
       }
       const artifact = event.target.closest("form[data-form='client-artifact']");
