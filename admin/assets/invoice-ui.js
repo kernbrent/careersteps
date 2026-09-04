@@ -373,6 +373,10 @@
       });
     }
 
+    function folderPickerId(clientId) {
+      return String(clientId).replace(/-/g, "").slice(0, 32);
+    }
+
     async function chooseFolderForForm(form) {
       const clientId = form.elements.client_id.value;
       if (!clientId) throw new Error("Choose a client before selecting its folder.");
@@ -384,7 +388,7 @@
         return null;
       }
       try {
-        const handle = await window.showDirectoryPicker({ id: `careersteps-${clientId}`, mode: "readwrite" });
+        const handle = await window.showDirectoryPicker({ id: folderPickerId(clientId), mode: "readwrite" });
         await storeFolderHandle(clientId, handle);
         form.elements.local_folder_name.value = handle.name;
         label.textContent = `Client folder: ${handle.name}`;

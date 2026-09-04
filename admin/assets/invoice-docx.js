@@ -72,6 +72,7 @@
       align ? `<w:jc w:val="${align}"/>` : "",
       `<w:spacing w:before="${before}" w:after="${after}" w:line="${line}" w:lineRule="auto"/>`,
       keepNext ? "<w:keepNext/>" : "",
+      "<w:suppressAutoHyphens/>",
       indent ? `<w:ind w:left="${indent}"/>` : "",
     ].join("");
     return `<w:p><w:pPr>${pPr}</w:pPr>${run(value, {
@@ -82,16 +83,16 @@
     })}</w:p>`;
   }
 
-  function cell(content, width, { shade = null, bold = false, align = null, margins = 100, vertical = "top" } = {}) {
+  function cell(content, width, { shade = null, bold = false, color = null, size = null, align = null, margins = 100, vertical = "center", gridSpan = 1 } = {}) {
     const paragraphs = Array.isArray(content)
       ? content.join("")
-      : paragraph(content, { bold, align, after: 60, line: 260 });
-    return `<w:tc><w:tcPr><w:tcW w:w="${width}" w:type="dxa"/><w:vAlign w:val="${vertical}"/>${shade ? `<w:shd w:val="clear" w:color="auto" w:fill="${shade}"/>` : ""}<w:tcMar><w:top w:w="${margins}" w:type="dxa"/><w:left w:w="${margins}" w:type="dxa"/><w:bottom w:w="${margins}" w:type="dxa"/><w:right w:w="${margins}" w:type="dxa"/></w:tcMar></w:tcPr>${paragraphs}</w:tc>`;
+      : paragraph(content, { bold, color, size, align, after: 60, line: 260 });
+    return `<w:tc><w:tcPr><w:tcW w:w="${width}" w:type="dxa"/>${gridSpan > 1 ? `<w:gridSpan w:val="${gridSpan}"/>` : ""}<w:vAlign w:val="${vertical}"/>${shade ? `<w:shd w:val="clear" w:color="auto" w:fill="${shade}"/>` : ""}<w:tcMar><w:top w:w="${margins}" w:type="dxa"/><w:left w:w="${margins}" w:type="dxa"/><w:bottom w:w="${margins}" w:type="dxa"/><w:right w:w="${margins}" w:type="dxa"/></w:tcMar></w:tcPr>${paragraphs}</w:tc>`;
   }
 
   function table(rows, widths, { borders = true, layout = "fixed", after = 160 } = {}) {
     const borderXml = borders
-      ? '<w:tblBorders><w:top w:val="single" w:sz="4" w:color="C8D0D8"/><w:left w:val="single" w:sz="4" w:color="C8D0D8"/><w:bottom w:val="single" w:sz="4" w:color="C8D0D8"/><w:right w:val="single" w:sz="4" w:color="C8D0D8"/><w:insideH w:val="single" w:sz="4" w:color="DDE3E8"/><w:insideV w:val="single" w:sz="4" w:color="DDE3E8"/></w:tblBorders>'
+      ? '<w:tblBorders><w:top w:val="single" w:sz="4" w:color="D9D9D9"/><w:left w:val="single" w:sz="4" w:color="D9D9D9"/><w:bottom w:val="single" w:sz="4" w:color="D9D9D9"/><w:right w:val="single" w:sz="4" w:color="D9D9D9"/><w:insideH w:val="single" w:sz="4" w:color="D9D9D9"/><w:insideV w:val="single" w:sz="4" w:color="D9D9D9"/></w:tblBorders>'
       : '<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>';
     const trailingParagraph = after === null ? "" : paragraph("", { after });
     return `<w:tbl><w:tblPr><w:tblW w:w="${widths.reduce((sum, value) => sum + value, 0)}" w:type="dxa"/><w:tblLayout w:type="${layout}"/>${borderXml}<w:tblCellMar><w:top w:w="80" w:type="dxa"/><w:left w:w="90" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/><w:right w:w="90" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${widths.map((width) => `<w:gridCol w:w="${width}"/>`).join("")}</w:tblGrid>${rows.join("")}</w:tbl>${trailingParagraph}`;
@@ -221,7 +222,7 @@
 
   function headerXml(invoice, hasClientLogo) {
     const clientLogo = hasClientLogo
-      ? imageParagraph("rId2", "Client logo", 685800, 685800, 2, "right", 20)
+      ? imageParagraph("rId2", "Client logo", 548640, 548640, 2, "right", 20)
       : "";
     const right = [
       clientLogo,
@@ -229,7 +230,7 @@
       paragraph("Invoice", { size: 26, align: "right", after: 40 }),
     ];
     const row = tableRow([
-      cell([imageParagraph("rId1", "Career Steps Consulting logo", 914400, 914400, 1, "left", 0)], 3000, { margins: 0, vertical: "center" }),
+      cell([imageParagraph("rId1", "Career Steps Consulting logo", 731520, 731520, 1, "left", 0)], 3000, { margins: 0, vertical: "center" }),
       cell(right, 6360, { margins: 0, vertical: "center" }),
     ], { cantSplit: true });
     const headerTable = table([row], [3000, 6360], { borders: false, after: 20 });
@@ -264,40 +265,35 @@
       ["PO / reference", invoice.purchase_order || "-"],
     ];
     const metadataRows = [];
-    for (let index = 0; index < metadata.length; index += 2) {
-      const first = metadata[index];
-      const second = metadata[index + 1];
-      metadataRows.push(tableRow([
-        cell(first[0], 1500, { bold: true, shade: "EAF0F6" }),
-        cell(first[1], 3180),
-        cell(second[0], 1500, { bold: true, shade: "EAF0F6" }),
-        cell(second[1], 3180),
-      ]));
+    for (let index = 0; index < metadata.length; index += 3) {
+      const shade = index === 0 ? "F3F7FB" : null;
+      metadataRows.push(tableRow(metadata.slice(index, index + 3).map(([label, value]) => cell([
+        paragraph(String(label).toUpperCase(), { bold: true, color: "4B5E70", size: 18, after: 20, line: 220 }),
+        paragraph(value, { after: 0, line: 260 }),
+      ], 3120, { shade, margins: 90, vertical: "center" }))));
     }
 
-    const widths = [1650, 1550, 900, 1300, 3960];
+    const widths = [4800, 1800, 900, 1860];
     const invoiceRows = [tableRow([
-      cell("Item", widths[0], { bold: true, shade: "EAF0F6" }),
-      cell("Rate", widths[1], { bold: true, shade: "EAF0F6" }),
-      cell("Units", widths[2], { bold: true, shade: "EAF0F6", align: "right" }),
-      cell("Total", widths[3], { bold: true, shade: "EAF0F6", align: "right" }),
-      cell("Description", widths[4], { bold: true, shade: "EAF0F6" }),
+      cell("Services", widths[0], { bold: true, color: "FFFFFF", shade: "0B2B78" }),
+      cell("Rate", widths[1], { bold: true, color: "FFFFFF", shade: "0B2B78", align: "right" }),
+      cell("Qty", widths[2], { bold: true, color: "FFFFFF", shade: "0B2B78", align: "center" }),
+      cell("Amount", widths[3], { bold: true, color: "FFFFFF", shade: "0B2B78", align: "right" }),
     ], { header: true })];
-    (invoice.items || []).forEach((item) => {
+    (invoice.items || []).forEach((item, index) => {
+      const service = [paragraph(item.work_type, { bold: true, after: item.description ? 30 : 0, line: 260 })];
+      if (item.description) service.push(paragraph(item.description, { after: 0, line: 260 }));
+      const shade = index % 2 ? "F7FAFD" : null;
       invoiceRows.push(tableRow([
-        cell(item.work_type, widths[0]),
-        cell(rateLabel(item, currency), widths[1]),
-        cell(number(item.quantity), widths[2], { align: "right" }),
-        cell(money(item.line_total ?? Number(item.quantity) * Number(item.unit_rate), currency), widths[3], { align: "right" }),
-        cell(item.description || "", widths[4]),
+        cell(service, widths[0], { shade, margins: 120 }),
+        cell(rateLabel(item, currency), widths[1], { shade, align: "right", margins: 120 }),
+        cell(number(item.quantity), widths[2], { shade, align: "center", margins: 120 }),
+        cell(money(item.line_total ?? Number(item.quantity) * Number(item.unit_rate), currency), widths[3], { shade, bold: true, align: "right", margins: 120 }),
       ]));
     });
     invoiceRows.push(tableRow([
-      cell("Total", widths[0], { bold: true, shade: "FFF200" }),
-      cell("", widths[1], { borders: false }),
-      cell("", widths[2]),
-      cell(money(invoice.total_amount, currency), widths[3], { bold: true, shade: "FFF200", align: "right" }),
-      cell("", widths[4]),
+      cell("Total due", widths[0] + widths[1] + widths[2], { gridSpan: 3, bold: true, shade: "EAF0F6", align: "right", margins: 140 }),
+      cell(money(invoice.total_amount, currency), widths[3], { bold: true, color: "FFFFFF", shade: "0B2B78", align: "right", margins: 140 }),
     ]));
 
     const signatureRows = [
@@ -310,29 +306,30 @@
         cell([paragraph(`Date: ${longDate(invoice.created_date)}`, { after: 0 })], 3260, { margins: 0, vertical: "bottom" }),
       ]),
       tableRow([
-        cell([paragraph("Client", { before: 140, after: 80 }), paragraph("By: ______________________________", { after: 0 })], 6100, { margins: 0 }),
+        cell([paragraph("Client", { before: 80, after: 50 }), paragraph("By: ______________________________", { after: 0 })], 6100, { margins: 0 }),
         cell([paragraph("Date: ____________", { after: 0 })], 3260, { margins: 0, vertical: "bottom" }),
       ]),
     ];
 
     const paymentInfo = invoice.payment_instructions
-      ? `${paragraph("Payment instructions", { bold: true, color: "0B2B78", after: 40 })}${paragraph(invoice.payment_instructions, { after: 120 })}`
+      ? `${paragraph("Payment instructions", { bold: true, color: "0B2B78", after: 40 })}${paragraph(invoice.payment_instructions, { after: 90 })}`
       : "";
     const terms = invoice.payment_terms
-      ? paragraph(`Terms: ${invoice.payment_terms}`, { italic: true, after: 120 })
+      ? paragraph(`Terms: ${invoice.payment_terms}`, { italic: true, after: 90 })
       : "";
     const summary = invoice.summary || `This invoice covers ${invoice.contract_name} services provided to ${invoice.client_name} for ${compactDateRange(invoice.period_start, invoice.period_end)}.`;
 
     const body = [
-      table(metadataRows, [1500, 3180, 1500, 3180], { borders: true, after: 180 }),
       paragraph("1. Summary", { style: "Heading2", before: 80, after: 100, keepNext: true }),
-      paragraph(summary, { after: 170, line: 300 }),
+      paragraph(summary, { after: 130, line: 300 }),
       paragraph("2. Invoice", { style: "Heading2", before: 40, after: 100, keepNext: true }),
-      table(invoiceRows, widths, { borders: false, after: 80 }),
+      table(invoiceRows, widths, { borders: true, after: 100 }),
       terms,
       paymentInfo,
-      paragraph("3. Signatures", { style: "Heading2", before: 100, after: 70, keepNext: true }),
-      paragraph("Electronic signature and email confirmation is sufficient", { italic: true, after: 80 }),
+      paragraph("Invoice details", { bold: true, color: "0B2B78", size: 24, before: 80, after: 50, keepNext: true }),
+      table(metadataRows, [3120, 3120, 3120], { borders: true, after: 120 }),
+      paragraph("3. Signatures", { style: "Heading2", before: 50, after: 50, keepNext: true }),
+      paragraph("Electronic signature and email confirmation is sufficient", { italic: true, after: 50 }),
       table(signatureRows, [6100, 3260], { borders: false, after: null }),
       '<w:sectPr><w:headerReference w:type="default" r:id="rId10"/><w:footerReference w:type="default" r:id="rId11"/><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1260" w:right="1080" w:bottom="1260" w:left="1080" w:header="180" w:footer="180" w:gutter="0"/><w:cols w:space="720"/><w:docGrid w:linePitch="360"/></w:sectPr>',
     ].join("");
