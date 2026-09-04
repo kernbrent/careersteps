@@ -20,8 +20,8 @@ The `/admin/` frontend remains on the existing GitHub Pages deployment. It conne
 
 Bookkeeping records and attachments are never stored in this repository or browser storage. The private portal uses:
 
-- a dedicated Cloudflare D1 database for expenses, income, partial payments, mileage, clients, projects, settings, sessions, and audit events;
-- a dedicated private R2 bucket for receipt and income attachments;
+- a dedicated Cloudflare D1 database for expenses, income, invoices, reusable invoice starting points, payments, mileage, clients, projects, settings, sessions, and audit events;
+- a dedicated private R2 bucket for receipts, generated invoices, contracts, MOUs, client logos, and the business signature;
 - a strong password stored only as an encrypted Worker secret, with PBKDF2 password changes stored as salted hashes in D1;
 - secure HTTP-only cookies, strict same-site scope, CSRF checks, origin validation, login rate limiting, session expiration, and security audit events;
 - authenticated, server-validated API endpoints for every read and change.

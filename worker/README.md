@@ -13,6 +13,14 @@ This Cloudflare Worker serves the private `/admin/` portal and protects the `/ap
 - R2 has no public access route. Attachments can be uploaded, viewed, or removed only through an authenticated API request.
 - Admin responses use no-store caching and restrictive security headers. Worker logs and traces are enabled without recording passwords, session tokens, CSRF tokens, or file contents.
 
+## Invoice workflow
+
+- Creating an invoice also creates a matching pending Income record. Payments recorded from either workflow update both views.
+- Invoice starting points can retain client, project, contract, billing lines, payment terms, summary source, and logo choices for reuse.
+- Contracts, MOUs, logos, generated invoices, and other client files are stored privately in R2 and cataloged in D1.
+- Word invoices are generated in the browser and saved to a remembered client folder when the browser supports folder access; otherwise they download normally.
+- The Career Steps signature is loaded through an authenticated endpoint and dated with the invoice creation date. Configure or replace it from **Client Files > Business signature** after deployment. Never add the raw signature image to the repository or public asset folder.
+
 ## Local validation
 
 From `worker/`:

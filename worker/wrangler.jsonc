@@ -13,7 +13,8 @@
       "pattern": "admin-api.careersteps.net",
       "custom_domain": true
     }
-  ],  "vars": {
+  ],
+  "vars": {
     "ALLOWED_ORIGINS": "https://careersteps.net,https://www.careersteps.net",
     "DISPLAY_TIME_ZONE": "America/Chicago"
   },

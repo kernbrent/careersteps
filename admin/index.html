@@ -10,6 +10,7 @@
   <meta name="description" content="Private bookkeeping and reporting for Career Steps Consulting.">
   <link rel="icon" type="image/png" href="../assets/images/career-steps-logo.png">
   <link rel="stylesheet" href="assets/admin.css">
+  <link rel="stylesheet" href="assets/invoice-ui.css">
 </head>
 <body>
   <a class="skip-link" href="#admin-main">Skip to main content</a>
@@ -27,7 +28,7 @@
     <div class="auth-card">
       <p class="eyebrow">Private access</p>
       <h1>Welcome back.</h1>
-      <p>Sign in to manage business income, expenses, mileage, clients, and CPA-ready reports.</p>
+      <p>Sign in to manage invoices, income, expenses, mileage, client files, and CPA-ready reports.</p>
       <form class="auth-form" id="login-form">
         <div class="auth-password-field">
           <label for="login-password">Password</label>
@@ -71,6 +72,8 @@
         <a class="is-active" href="#/dashboard" data-route="dashboard"><span class="nav-mark">D</span>Dashboard</a>
         <a href="#/expenses" data-route="expenses"><span class="nav-mark">E</span>Expenses</a>
         <a href="#/income" data-route="income"><span class="nav-mark">I</span>Income</a>
+        <a href="#/invoices" data-route="invoices"><span class="nav-mark">V</span>Invoices</a>
+        <a href="#/artifacts" data-route="artifacts"><span class="nav-mark">F</span>Client Files</a>
         <a href="#/mileage" data-route="mileage"><span class="nav-mark">M</span>Mileage</a>
         <a href="#/clients" data-route="clients"><span class="nav-mark">C</span>Clients &amp; Projects</a>
         <a href="#/reports" data-route="reports"><span class="nav-mark">R</span>Reports</a>
@@ -102,6 +105,7 @@
             <div class="quick-actions" aria-label="Quick actions">
               <button type="button" data-action="add-expense">Add expense</button>
               <button type="button" data-action="add-income">Add income</button>
+              <button type="button" data-action="add-invoice">Create invoice</button>
               <button type="button" data-action="add-mileage">Log mileage</button>
               <a href="#/reports">Build report</a>
             </div>
@@ -146,6 +150,8 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
   <script src="assets/config.js"></script>
+  <script src="assets/invoice-docx.js"></script>
+  <script src="assets/invoice-ui.js"></script>
   <script src="assets/app.js"></script>
 </body>
 </html>

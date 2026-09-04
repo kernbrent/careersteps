@@ -10,6 +10,14 @@ import {
   sessionInfo,
 } from "./security";
 import { deleteAttachment, downloadAttachment, uploadAttachment } from "./attachments";
+import { deleteClientArtifact, downloadClientArtifact, uploadClientArtifact } from "./artifacts";
+import { invoiceBrandingAsset } from "./invoice-branding";
+import {
+  createInvoice,
+  deleteInvoiceProfile,
+  markInvoicePaid,
+  updateInvoice,
+} from "./invoices";
 import {
   bookkeepingData,
   createRecord,
@@ -65,6 +73,20 @@ async function route(request: Request, env: Env, path: string, url: URL): Promis
     await requireMutation(request, env);
     return createTripBatch(request, env);
   }
+  if (request.method === "POST" && path === "/artifacts") {
+    await requireMutation(request, env);
+    return uploadClientArtifact(request, env, url);
+  }
+  if (request.method === "POST" && path === "/invoices") {
+    await requireMutation(request, env);
+    return createInvoice(request, env);
+  }
+
+  const brandingMatch = path.match(/^\/invoice-assets\/(signature)$/);
+  if (brandingMatch?.[1] && request.method === "GET") {
+    await authenticate(request, env);
+    return invoiceBrandingAsset(env, brandingMatch[1]);
+  }
 
   const attachmentMatch = path.match(/^\/attachments\/([^/]+)$/);
   if (attachmentMatch?.[1]) {
@@ -77,6 +99,37 @@ async function route(request: Request, env: Env, path: string, url: URL): Promis
       await requireMutation(request, env);
       return deleteAttachment(env, id);
     }
+  }
+
+  const artifactMatch = path.match(/^\/artifacts\/([^/]+)$/);
+  if (artifactMatch?.[1]) {
+    const id = decodedId(artifactMatch[1]);
+    if (request.method === "GET") {
+      await authenticate(request, env);
+      return downloadClientArtifact(env, id);
+    }
+    if (request.method === "DELETE") {
+      await requireMutation(request, env);
+      return deleteClientArtifact(env, id);
+    }
+  }
+
+  const invoicePaidMatch = path.match(/^\/invoices\/([^/]+)\/paid$/);
+  if (invoicePaidMatch?.[1] && request.method === "POST") {
+    await requireMutation(request, env);
+    return markInvoicePaid(request, env, decodedId(invoicePaidMatch[1]));
+  }
+
+  const invoiceMatch = path.match(/^\/invoices\/([^/]+)$/);
+  if (invoiceMatch?.[1] && request.method === "PATCH") {
+    await requireMutation(request, env);
+    return updateInvoice(request, env, decodedId(invoiceMatch[1]));
+  }
+
+  const profileMatch = path.match(/^\/invoice-profiles\/([^/]+)$/);
+  if (profileMatch?.[1] && request.method === "DELETE") {
+    await requireMutation(request, env);
+    return deleteInvoiceProfile(env, decodedId(profileMatch[1]));
   }
 
   const recordsMatch = path.match(/^\/records\/([a-z_]+)(?:\/([^/]+))?$/);
@@ -165,3 +218,4 @@ export { routePath };
 export { adminPasswordPolicyError, deriveAdminPasswordHash, isAllowedOrigin, secureEqual } from "./security";
 export { normalizeRecordPayload, recordTable } from "./records";
 export { normalizeTripBatchPayload } from "./trips";
+export { normalizeInvoicePayload } from "./invoices";

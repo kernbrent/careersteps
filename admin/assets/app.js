@@ -17,6 +17,10 @@
     "income_payments",
     "mileage_entries",
     "attachments",
+    "invoices",
+    "invoice_items",
+    "invoice_profiles",
+    "client_artifacts",
   ];
   const DEFAULT_CATEGORIES = [
     ["Tolls", "Car and truck expenses", "#6d5b8c"],
@@ -47,6 +51,8 @@
     dashboard: ["Overview", "Dashboard"],
     expenses: ["Bookkeeping", "Expenses"],
     income: ["Bookkeeping", "Income"],
+    invoices: ["Client billing", "Invoices"],
+    artifacts: ["Client billing", "Files & Assets"],
     mileage: ["Bookkeeping", "Mileage"],
     clients: ["Relationships", "Clients & Projects"],
     reports: ["Tax preparation", "Reports"],
@@ -68,8 +74,13 @@
     income_payments: [],
     mileage_entries: [],
     attachments: [],
+    invoices: [],
+    invoice_items: [],
+    invoice_profiles: [],
+    client_artifacts: [],
     reportFilters: null,
   };
+  let invoicePortal = null;
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -166,6 +177,9 @@
     }
     if (error?.code === "MILEAGE_RATE_OVERLAP") {
       return "This date range overlaps another active mileage rate. Adjust one of the date ranges and try again.";
+    }
+    if (error?.code === "DUPLICATE_INVOICE") {
+      return "That invoice number or saved starting-point name is already in use.";
     }
     if (error?.code === "AUTH_REQUIRED" || error?.code === "SESSION_EXPIRED") {
       return "Your secure session expired. Sign in again.";
@@ -298,6 +312,7 @@
     state.expenses.sort((a, b) => b.expense_date.localeCompare(a.expense_date));
     state.income.sort((a, b) => b.income_date.localeCompare(a.income_date));
     state.mileage_entries.sort((a, b) => b.mileage_date.localeCompare(a.mileage_date));
+    state.invoices.sort((a, b) => b.created_date.localeCompare(a.created_date));
   }
 
   async function saveRow(table, payload, id = null) {
@@ -367,6 +382,14 @@
   function showApp() {
     showOnly("admin-shell");
     $("[data-active-tax-year]").textContent = taxYear();
+    if (!invoicePortal) {
+      invoicePortal = window.createCareerStepsInvoicePortal({
+        state, $, $$, API_BASE, apiRequest, loadData, renderRoute, dialogFrame, toast, escapeHtml,
+        money, shortDate, statusBadge, clientName, projectName, optionList, clean, num, uid, today,
+        taxYear, amountPaid, pageToolbar, emptyState, methodOptions,
+      });
+      if (state.demo) invoicePortal.seedDemoData();
+    }
     if (state.demo && !$("#demo-banner")) {
       const banner = document.createElement("div");
       banner.id = "demo-banner";
@@ -395,6 +418,8 @@
       dashboard: renderDashboard,
       expenses: renderExpenses,
       income: renderIncome,
+      invoices: invoicePortal.renderInvoices,
+      artifacts: invoicePortal.renderArtifacts,
       mileage: renderMileage,
       clients: renderClients,
       reports: renderReports,
@@ -525,6 +550,7 @@
           <div class="quick-actions">
             <button type="button" data-action="add-expense">Add expense</button>
             <button type="button" data-action="add-income">Add income</button>
+            <button type="button" data-action="add-invoice">Create invoice</button>
             <button type="button" data-action="add-mileage">Log mileage</button>
             <a href="#/reports">Build report</a>
           </div>
@@ -591,7 +617,10 @@
   function renderIncome() {
     const rows = state.income.map((item) => {
       const paid = amountPaid(item.id);
-      const status = incomeComputedStatus(item);
+      const linkedInvoice = invoicePortal?.invoiceForIncome(item.id);
+      const status = linkedInvoice && item.payment_status === "unpaid" && (!item.due_date || item.due_date >= today())
+        ? "pending"
+        : incomeComputedStatus(item);
       const haystack = [item.income_date, item.payer_name, item.invoice_number, item.description, clientName(item.client_id), item.payment_method, status].join(" ").toLowerCase();
       return `<tr data-search-row="${escapeHtml(haystack)}">
         <td>${shortDate(item.income_date)}</td>
@@ -601,13 +630,13 @@
         <td>${receiptBadge("income", item.id)}</td>
         <td>${statusBadge(status)}${item.cpa_review ? '<span class="mini-flag">CPA</span>' : ""}</td>
         <td class="number"><strong>${money(item.amount)}</strong><small>${money(paid)} received</small></td>
-        <td class="row-actions"><button type="button" data-action="record-payment" data-id="${item.id}">Payment</button><button type="button" data-action="edit-income" data-id="${item.id}">Edit</button><button type="button" data-action="delete-income" data-id="${item.id}">Delete</button></td>
+        <td class="row-actions"><button type="button" data-action="record-payment" data-id="${item.id}">Payment</button>${linkedInvoice ? `<button type="button" data-action="edit-invoice" data-id="${linkedInvoice.id}">Invoice</button>` : `<button type="button" data-action="edit-income" data-id="${item.id}">Edit</button><button type="button" data-action="delete-income" data-id="${item.id}">Delete</button>`}</td>
       </tr>`;
     }).join("");
     return `
       <section class="view">
         <div class="section-heading-row"><div><p class="section-kicker">Client revenue</p><h2>Income & invoices</h2><p>Record invoices, payments received, partial payments, and supporting documents.</p></div></div>
-        ${pageToolbar("income", "Search client, invoice, description, or status", "add-income", "Add income")}
+        ${pageToolbar("income", "Search client, invoice, description, or status", "add-income", "Add income", '<button class="secondary-button" type="button" data-action="add-invoice">+ Create invoice</button>')}
         <div class="panel table-panel">${state.income.length ? `
           <div class="table-wrap"><table class="data-table">
             <thead><tr><th>Income date</th><th>Payer / description</th><th>Invoice</th><th>Client</th><th>Files</th><th>Status</th><th class="number">Invoice / received</th><th><span class="sr-only">Actions</span></th></tr></thead>
@@ -2544,7 +2573,9 @@
       case "export-csv": exportCsv(); break;
       case "export-xlsx": exportXlsx(); break;
       case "export-pdf": exportPdf(); break;
-      default: break;
+      default:
+        if (invoicePortal) await invoicePortal.handleAction(button);
+        break;
     }
   }
 
@@ -2561,7 +2592,7 @@
       settings: saveSettings,
       password: savePassword,
     };
-    const handler = handlers[form.dataset.form];
+    const handler = handlers[form.dataset.form] || invoicePortal?.formHandler(form.dataset.form);
     if (!handler) return;
     setBusy(form, true);
     try {
@@ -2660,6 +2691,7 @@
       if (event.target.matches("[data-global-search]")) {
         $("[data-global-search-results]").innerHTML = globalSearchResults(event.target.value);
       }
+      invoicePortal?.handleInput(event);
       const form = event.target.closest("[data-form]");
       if (form && form.dataset.saveDuplicate) {
         delete form.dataset.saveDuplicate;
@@ -2679,6 +2711,7 @@
       }
     });
     document.addEventListener("change", (event) => {
+      invoicePortal?.handleChange(event);
       const mileageBatchForm = event.target.closest("form[data-form='mileage']");
       if (mileageBatchForm && !mileageBatchForm.dataset.id) {
         if (event.target.name === "trip_template_id") {

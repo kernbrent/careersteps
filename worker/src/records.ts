@@ -377,6 +377,14 @@ export async function bookkeepingData(env: Env): Promise<Response> {
       `SELECT id, owner_id, record_type, expense_id, income_id, file_name, mime_type, size_bytes, created_at
        FROM attachments ORDER BY created_at DESC`,
     ),
+    env.DB.prepare("SELECT * FROM invoices ORDER BY created_date DESC, created_at DESC"),
+    env.DB.prepare("SELECT * FROM invoice_items ORDER BY invoice_id, sort_order"),
+    env.DB.prepare("SELECT * FROM invoice_profiles WHERE is_active = 1 ORDER BY lower(name)"),
+    env.DB.prepare(
+      `SELECT id, owner_id, client_id, project_id, linked_invoice_id, artifact_type, display_name,
+         file_name, mime_type, size_bytes, source_url, notes, is_current, created_at, updated_at
+       FROM client_artifacts WHERE is_current = 1 ORDER BY created_at DESC`,
+    ),
   ];
   const results = await env.DB.batch(statements);
   const settings = results[0]?.results[0] ?? null;
@@ -393,6 +401,10 @@ export async function bookkeepingData(env: Env): Promise<Response> {
     income_payments: results[8]?.results ?? [],
     mileage_entries: results[9]?.results ?? [],
     attachments: results[10]?.results ?? [],
+    invoices: results[11]?.results ?? [],
+    invoice_items: results[12]?.results ?? [],
+    invoice_profiles: results[13]?.results ?? [],
+    client_artifacts: results[14]?.results ?? [],
   });
 }
 
