@@ -83,6 +83,16 @@
     })}</w:p>`;
   }
 
+  function pageConditionalRun(value, { bold = false, color = null, size = null } = {}) {
+    const fieldResultProperties = [
+      bold ? "<w:b/>" : "",
+      color ? `<w:color w:val="${color}"/>` : "",
+      size ? `<w:sz w:val="${size}"/><w:szCs w:val="${size}"/>` : "",
+    ].join("");
+    const condition = ` > 1 "${plainText(value).replaceAll("\n", " ")}" "" \\* MERGEFORMAT `;
+    return `<w:r><w:fldChar w:fldCharType="begin" w:dirty="true"/></w:r><w:r><w:instrText xml:space="preserve"> IF </w:instrText></w:r><w:r><w:fldChar w:fldCharType="begin" w:dirty="true"/></w:r><w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r><w:r><w:fldChar w:fldCharType="separate"/></w:r><w:r><w:t>1</w:t></w:r><w:r><w:fldChar w:fldCharType="end"/></w:r><w:r><w:instrText xml:space="preserve">${escapeXml(condition)}</w:instrText></w:r><w:r><w:fldChar w:fldCharType="separate"/></w:r><w:r>${fieldResultProperties ? `<w:rPr>${fieldResultProperties}</w:rPr>` : ""}<w:t xml:space="preserve"></w:t></w:r><w:r><w:fldChar w:fldCharType="end"/></w:r>`;
+  }
+
   function cell(content, width, { shade = null, bold = false, color = null, size = null, align = null, margins = 100, vertical = "center", gridSpan = 1 } = {}) {
     const paragraphs = Array.isArray(content)
       ? content.join("")
@@ -104,8 +114,8 @@
     return `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><wp:extent cx="${widthEmu}" cy="${heightEmu}"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="${id}" name="${escapeXml(name)}"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="${id}" name="${escapeXml(name)}"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="${relationshipId}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${widthEmu}" cy="${heightEmu}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
   }
 
-  function imageParagraph(relationshipId, name, widthEmu, heightEmu, id, align = "left", after = 40) {
-    return `<w:p><w:pPr><w:jc w:val="${align}"/><w:spacing w:after="${after}"/></w:pPr>${drawing(relationshipId, name, widthEmu, heightEmu, id)}</w:p>`;
+  function imageParagraph(relationshipId, name, widthEmu, heightEmu, id, align = "left", after = 40, keepNext = false) {
+    return `<w:p><w:pPr><w:jc w:val="${align}"/><w:spacing w:after="${after}"/>${keepNext ? "<w:keepNext/>" : ""}</w:pPr>${drawing(relationshipId, name, widthEmu, heightEmu, id)}</w:p>`;
   }
 
   const imageDetails = (mimeType, fallback = "png") => {
@@ -270,67 +280,73 @@
       metadataRows.push(tableRow(metadata.slice(index, index + 3).map(([label, value]) => cell([
         paragraph(String(label).toUpperCase(), { bold: true, color: "4B5E70", size: 18, after: 20, line: 220 }),
         paragraph(value, { after: 0, line: 260 }),
-      ], 3120, { shade, margins: 90, vertical: "center" }))));
+      ], 3120, { shade, margins: 60, vertical: "center" }))));
     }
 
     const widths = [4800, 1800, 900, 1860];
     const invoiceRows = [tableRow([
-      cell("Services", widths[0], { bold: true, color: "FFFFFF", shade: "0B2B78" }),
-      cell("Rate", widths[1], { bold: true, color: "FFFFFF", shade: "0B2B78", align: "right" }),
-      cell("Qty", widths[2], { bold: true, color: "FFFFFF", shade: "0B2B78", align: "center" }),
-      cell("Amount", widths[3], { bold: true, color: "FFFFFF", shade: "0B2B78", align: "right" }),
+      cell("Services", widths[0], { bold: true, color: "FFFFFF", shade: "0B2B78", margins: 80 }),
+      cell("Rate", widths[1], { bold: true, color: "FFFFFF", shade: "0B2B78", align: "right", margins: 80 }),
+      cell("Qty", widths[2], { bold: true, color: "FFFFFF", shade: "0B2B78", align: "center", margins: 80 }),
+      cell("Amount", widths[3], { bold: true, color: "FFFFFF", shade: "0B2B78", align: "right", margins: 80 }),
     ], { header: true })];
     (invoice.items || []).forEach((item, index) => {
       const service = [paragraph(item.work_type, { bold: true, after: item.description ? 30 : 0, line: 260 })];
       if (item.description) service.push(paragraph(item.description, { after: 0, line: 260 }));
       const shade = index % 2 ? "F7FAFD" : null;
       invoiceRows.push(tableRow([
-        cell(service, widths[0], { shade, margins: 120 }),
-        cell(rateLabel(item, currency), widths[1], { shade, align: "right", margins: 120 }),
-        cell(number(item.quantity), widths[2], { shade, align: "center", margins: 120 }),
-        cell(money(item.line_total ?? Number(item.quantity) * Number(item.unit_rate), currency), widths[3], { shade, bold: true, align: "right", margins: 120 }),
+        cell(service, widths[0], { shade, margins: 90 }),
+        cell(rateLabel(item, currency), widths[1], { shade, align: "right", margins: 90 }),
+        cell(number(item.quantity), widths[2], { shade, align: "center", margins: 90 }),
+        cell(money(item.line_total ?? Number(item.quantity) * Number(item.unit_rate), currency), widths[3], { shade, bold: true, align: "right", margins: 90 }),
       ]));
     });
     invoiceRows.push(tableRow([
-      cell("Total due", widths[0] + widths[1] + widths[2], { gridSpan: 3, bold: true, shade: "EAF0F6", align: "right", margins: 140 }),
-      cell(money(invoice.total_amount, currency), widths[3], { bold: true, color: "FFFFFF", shade: "0B2B78", align: "right", margins: 140 }),
+      cell("Total due", widths[0] + widths[1] + widths[2], { gridSpan: 3, bold: true, shade: "EAF0F6", align: "right", margins: 100 }),
+      cell(money(invoice.total_amount, currency), widths[3], { bold: true, color: "FFFFFF", shade: "0B2B78", align: "right", margins: 100 }),
     ]));
 
     const signatureRows = [
       tableRow([
         cell([
-          paragraph("Career Steps Consulting LLC", { after: 40 }),
-          imageParagraph("rId12", "Brent Kern signature", 2100000, 460000, 10, "left", 10),
-          paragraph("By: Brent D. Kern", { after: 0 }),
+          paragraph("Career Steps Consulting LLC", { after: 0, keepNext: true }),
+          imageParagraph("rId12", "Brent Kern signature", 1650000, 300000, 10, "left", 0, true),
+          paragraph("By: Brent D. Kern", { after: 0, keepNext: true }),
         ], 6100, { margins: 0 }),
-        cell([paragraph(`Date: ${longDate(invoice.created_date)}`, { after: 0 })], 3260, { margins: 0, vertical: "bottom" }),
+        cell([paragraph(`Date: ${longDate(invoice.created_date)}`, { after: 0, keepNext: true })], 3260, { margins: 0, vertical: "bottom" }),
       ]),
       tableRow([
-        cell([paragraph("Client", { before: 80, after: 50 }), paragraph("By: ______________________________", { after: 0 })], 6100, { margins: 0 }),
+        cell([paragraph("Client", { before: 10, after: 10 }), paragraph("By: ______________________________", { after: 0 })], 6100, { margins: 0 }),
         cell([paragraph("Date: ____________", { after: 0 })], 3260, { margins: 0, vertical: "bottom" }),
       ]),
     ];
 
     const paymentInfo = invoice.payment_instructions
-      ? `${paragraph("Payment instructions", { bold: true, color: "0B2B78", after: 40 })}${paragraph(invoice.payment_instructions, { after: 90 })}`
+      ? `${paragraph("Payment instructions", { bold: true, color: "0B2B78", after: 30 })}${paragraph(invoice.payment_instructions, { after: 60 })}`
       : "";
     const terms = invoice.payment_terms
-      ? paragraph(`Terms: ${invoice.payment_terms}`, { italic: true, after: 90 })
+      ? paragraph(`Terms: ${invoice.payment_terms}`, { italic: true, after: 60 })
       : "";
     const summary = invoice.summary || `This invoice covers ${invoice.contract_name} services provided to ${invoice.client_name} for ${compactDateRange(invoice.period_start, invoice.period_end)}.`;
+
+    // Word has no conditional page-break element. A keep-with-next chain across
+    // the heading, note, and first signature row leaves the section here when it
+    // fits or moves the complete section to the next page when it does not.
+    const signatureNote = `<w:p><w:pPr><w:spacing w:before="0" w:after="10" w:line="260" w:lineRule="auto"/><w:keepNext/><w:suppressAutoHyphens/></w:pPr>${pageConditionalRun(`Total due (continued): ${money(invoice.total_amount, currency)}  |  `, { bold: true, color: "0B2B78", size: 22 })}${run("Electronic signature and email confirmation is sufficient", { italic: true })}</w:p>`;
 
     const body = [
       paragraph("1. Summary", { style: "Heading2", before: 80, after: 100, keepNext: true }),
       paragraph(summary, { after: 130, line: 300 }),
       paragraph("2. Invoice", { style: "Heading2", before: 40, after: 100, keepNext: true }),
-      table(invoiceRows, widths, { borders: true, after: 100 }),
+      table(invoiceRows, widths, { borders: true, after: 70 }),
       terms,
       paymentInfo,
-      paragraph("Invoice details", { bold: true, color: "0B2B78", size: 24, before: 80, after: 50, keepNext: true }),
-      table(metadataRows, [3120, 3120, 3120], { borders: true, after: 120 }),
-      paragraph("3. Signatures", { style: "Heading2", before: 50, after: 50, keepNext: true }),
-      paragraph("Electronic signature and email confirmation is sufficient", { italic: true, after: 50 }),
+      paragraph("Invoice details", { bold: true, color: "0B2B78", size: 24, before: 60, after: 40, keepNext: true }),
+      table(metadataRows, [3120, 3120, 3120], { borders: true, after: 0 }),
+      paragraph("3. Signatures", { style: "Heading2", before: 0, after: 20, keepNext: true }),
+      signatureNote,
       table(signatureRows, [6100, 3260], { borders: false, after: null }),
+      paragraph("", { after: 0, line: 20 }),
       '<w:sectPr><w:headerReference w:type="default" r:id="rId10"/><w:footerReference w:type="default" r:id="rId11"/><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1260" w:right="1080" w:bottom="1260" w:left="1080" w:header="180" w:footer="180" w:gutter="0"/><w:cols w:space="720"/><w:docGrid w:linePitch="360"/></w:sectPr>',
     ].join("");
     return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><w:body>${body}</w:body></w:document>`;
@@ -369,7 +385,7 @@
       ["docProps/app.xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>Career Steps Admin Portal</Application><DocSecurity>0</DocSecurity><ScaleCrop>false</ScaleCrop><Company>Career Steps Consulting LLC</Company><AppVersion>1.0</AppVersion></Properties>'],
       ["word/document.xml", documentXml(invoice)],
       ["word/styles.xml", stylesXml()],
-      ["word/settings.xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:zoom w:percent="100"/><w:defaultTabStop w:val="720"/><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>'],
+      ["word/settings.xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:zoom w:percent="100"/><w:defaultTabStop w:val="720"/><w:updateFields w:val="true"/><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>'],
       ["word/header1.xml", headerXml(invoice, Boolean(clientLogo))],
       ["word/footer1.xml", footerXml(invoice)],
       ["word/_rels/document.xml.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId10" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/><Relationship Id="rId11" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/><Relationship Id="rId12" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/signature.png"/></Relationships>'],

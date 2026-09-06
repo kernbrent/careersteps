@@ -66,4 +66,23 @@ describe("invoice Word document layout", () => {
     expect(archive).toContain(">Services<");
     expect(archive).not.toContain('w:fill="FFF200"');
   });
+
+  it("keeps the complete signatures section in one non-splitting pagination block", async () => {
+    const archive = await generatedArchiveText();
+    const signatures = archive.indexOf("3. Signatures");
+    const sectionStart = archive.lastIndexOf("<w:p>", signatures);
+    const sectionEnd = archive.indexOf("<w:sectPr>", signatures);
+    const signatureBlock = archive.slice(sectionStart, sectionEnd);
+
+    expect(sectionStart).toBeGreaterThan(-1);
+    expect(sectionEnd).toBeGreaterThan(signatures);
+    expect(signatureBlock).toContain("<w:cantSplit/>");
+    expect(signatureBlock.match(/<w:keepNext\/>/g)?.length).toBeGreaterThanOrEqual(5);
+    expect(signatureBlock).toContain("Career Steps Consulting LLC");
+    expect(signatureBlock).toContain("Client");
+    expect(signatureBlock).toContain("Total due (continued): $600.00");
+    expect(signatureBlock).toContain("> IF <");
+    expect(signatureBlock).toContain("> PAGE <");
+    expect(archive).toContain('<w:updateFields w:val="true"/>');
+  });
 });

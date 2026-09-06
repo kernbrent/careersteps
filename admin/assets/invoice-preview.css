@@ -104,7 +104,11 @@
 .invoice-preview-details dt { color: #4b5e70; font-size: 8pt; font-weight: 700; text-transform: uppercase; }
 .invoice-preview-details dd { margin: .03in 0 0; }
 
-.invoice-preview-signatures { margin-top: .16in; }
+.invoice-preview-signatures {
+  margin-top: .16in;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
 .invoice-preview-signature-note { margin: 0 0 .08in; font-style: italic; }
 .invoice-preview-signature-row { display: grid; grid-template-columns: 2fr 1fr; align-items: end; gap: .15in; }
 .invoice-preview-signature-row > div { display: grid; justify-items: start; gap: .03in; }
