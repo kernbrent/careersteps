@@ -31,10 +31,13 @@
       <h1>Welcome back.</h1>
       <p>Sign in to manage invoices, income, expenses, mileage, client files, and CPA-ready reports.</p>
       <form class="auth-form" id="login-form">
+        <label for="login-user-id">User ID
+          <input id="login-user-id" type="text" name="userId" autocomplete="username" required maxlength="64" autofocus>
+        </label>
         <div class="auth-password-field">
           <label for="login-password">Password</label>
           <div class="password-input-wrap">
-            <input id="login-password" type="password" name="password" autocomplete="current-password" required autofocus>
+            <input id="login-password" type="password" name="password" autocomplete="current-password" required>
             <button class="password-visibility-button" type="button" data-password-toggle aria-label="Show password" aria-pressed="false" title="Show password">
               <svg class="icon-eye" aria-hidden="true" viewBox="0 0 24 24">
                 <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
@@ -154,6 +157,6 @@
   <script src="assets/invoice-docx.js?v=20260904.3"></script>
   <script src="assets/invoice-preview.js?v=20260904.2"></script>
   <script src="assets/invoice-ui.js?v=20260904.2"></script>
-  <script src="assets/app.js?v=20260904.2"></script>
+  <script src="assets/app.js?v=20260906.1"></script>
 </body>
 </html>

@@ -215,7 +215,7 @@ export default {
 } satisfies ExportedHandler<Env>;
 
 export { routePath };
-export { adminPasswordPolicyError, deriveAdminPasswordHash, isAllowedOrigin, secureEqual } from "./security";
+export { adminPasswordPolicyError, deriveAdminPasswordHash, isAllowedOrigin, isValidUserId, secureEqual } from "./security";
 export { normalizeRecordPayload, recordTable } from "./records";
 export { normalizeTripBatchPayload } from "./trips";
 export { normalizeInvoicePayload } from "./invoices";

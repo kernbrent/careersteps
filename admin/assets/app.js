@@ -2625,6 +2625,7 @@
       const session = await apiRequest("/login", {
         method: "POST",
         body: {
+          userId: String(data.get("userId")),
           password: String(data.get("password")),
           rememberMe: form.elements.remember_me.checked,
         },
