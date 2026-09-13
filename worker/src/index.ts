@@ -14,6 +14,7 @@ import { deleteClientArtifact, downloadClientArtifact, uploadClientArtifact } fr
 import { invoiceBrandingAsset } from "./invoice-branding";
 import {
   createInvoice,
+  deleteInvoice,
   deleteInvoiceProfile,
   markInvoicePaid,
   updateInvoice,
@@ -121,9 +122,16 @@ async function route(request: Request, env: Env, path: string, url: URL): Promis
   }
 
   const invoiceMatch = path.match(/^\/invoices\/([^/]+)$/);
-  if (invoiceMatch?.[1] && request.method === "PATCH") {
-    await requireMutation(request, env);
-    return updateInvoice(request, env, decodedId(invoiceMatch[1]));
+  if (invoiceMatch?.[1]) {
+    const id = decodedId(invoiceMatch[1]);
+    if (request.method === "PATCH") {
+      await requireMutation(request, env);
+      return updateInvoice(request, env, id);
+    }
+    if (request.method === "DELETE") {
+      await requireMutation(request, env);
+      return deleteInvoice(env, id);
+    }
   }
 
   const profileMatch = path.match(/^\/invoice-profiles\/([^/]+)$/);
@@ -219,3 +227,4 @@ export { adminPasswordPolicyError, deriveAdminPasswordHash, isAllowedOrigin, isV
 export { normalizeRecordPayload, recordTable } from "./records";
 export { normalizeTripBatchPayload } from "./trips";
 export { normalizeInvoicePayload } from "./invoices";
+export { invoiceCanBeDeleted } from "./invoices";

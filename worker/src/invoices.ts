@@ -51,6 +51,14 @@ type ExistingInvoice = {
   paid_amount: number;
 };
 
+type InvoiceDeletionRow = ExistingInvoice & {
+  invoice_number: string;
+};
+
+type StoragePathRow = {
+  storage_path: string;
+};
+
 type ClientRow = { id: string; name: string };
 type ProjectRow = { client_id: string };
 type ArtifactRow = { id: string; client_id: string | null; artifact_type: string };
@@ -107,6 +115,10 @@ function amount(value: unknown, key: string, allowZero = false): number {
 
 function moneyRound(value: number): number {
   return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+export function invoiceCanBeDeleted(status: string, paidAmount: number): boolean {
+  return (status === "pending" || status === "overdue") && paidAmount <= 0;
 }
 
 function normalizeItem(value: unknown, index: number): InvoiceItemInput {
@@ -471,6 +483,67 @@ export async function markInvoicePaid(request: Request, env: Env, invoiceId: str
     databaseError(error);
   }
   return invoiceResponse(env, invoiceId);
+}
+
+export async function deleteInvoice(env: Env, invoiceId: string): Promise<Response> {
+  const existing = await env.DB.prepare(
+    `SELECT invoices.id, invoices.income_id, invoices.invoice_number, invoices.status,
+       COALESCE((SELECT SUM(amount) FROM income_payments WHERE income_id = invoices.income_id), 0) AS paid_amount
+     FROM invoices WHERE invoices.id = ?1`,
+  ).bind(invoiceId).first<InvoiceDeletionRow>();
+  if (!existing) throw new AdminError(404, "NOT_FOUND", "That invoice no longer exists.");
+  if (!invoiceCanBeDeleted(existing.status, existing.paid_amount)) {
+    throw new AdminError(
+      409,
+      "INVOICE_NOT_DELETABLE",
+      "Only unpaid pending or overdue invoices can be deleted. Paid, partially paid, and void invoices must be retained.",
+    );
+  }
+
+  const [invoiceArtifacts, incomeAttachments] = await Promise.all([
+    env.DB.prepare("SELECT storage_path FROM client_artifacts WHERE linked_invoice_id = ?1 AND storage_path IS NOT NULL")
+      .bind(invoiceId)
+      .all<StoragePathRow>(),
+    env.DB.prepare("SELECT storage_path FROM attachments WHERE income_id = ?1")
+      .bind(existing.income_id)
+      .all<StoragePathRow>(),
+  ]);
+  const now = new Date().toISOString();
+  try {
+    await env.DB.batch([
+      env.DB.prepare("DELETE FROM client_artifacts WHERE linked_invoice_id = ?1").bind(invoiceId),
+      env.DB.prepare("DELETE FROM invoices WHERE id = ?1").bind(invoiceId),
+      env.DB.prepare("DELETE FROM income WHERE id = ?1").bind(existing.income_id),
+      env.DB.prepare(
+        "INSERT INTO audit_events (id, entity_type, entity_id, event_type, metadata_json, created_at) VALUES (?1, 'invoices', ?2, 'deleted', ?3, ?4)",
+      ).bind(
+        crypto.randomUUID(),
+        invoiceId,
+        JSON.stringify({ invoice_number: existing.invoice_number, income_id: existing.income_id }),
+        now,
+      ),
+    ]);
+  } catch (error) {
+    databaseError(error);
+  }
+
+  const storagePaths = [...new Set([
+    ...invoiceArtifacts.results.map((item) => item.storage_path),
+    ...incomeAttachments.results.map((item) => item.storage_path),
+  ])];
+  if (storagePaths.length) {
+    try {
+      await env.ATTACHMENTS.delete(storagePaths);
+    } catch (error) {
+      console.error(JSON.stringify({
+        event: "invoice_file_cleanup_failed",
+        invoice_id: invoiceId,
+        file_count: storagePaths.length,
+        message: error instanceof Error ? error.message : "Unknown error",
+      }));
+    }
+  }
+  return adminJson({ success: true });
 }
 
 export async function deleteInvoiceProfile(env: Env, profileId: string): Promise<Response> {

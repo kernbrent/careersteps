@@ -109,6 +109,7 @@
             <button type="button" data-action="generate-invoice" data-id="${invoice.id}">Word</button>
             ${status !== "paid" && status !== "void" ? `<button type="button" data-action="mark-invoice-paid" data-id="${invoice.id}">Paid</button>` : ""}
             <button type="button" data-action="edit-invoice" data-id="${invoice.id}">Edit</button>
+            ${paid <= 0 && (status === "pending" || status === "overdue") ? `<button type="button" data-action="delete-invoice" data-id="${invoice.id}">Delete</button>` : ""}
           </td>
         </tr>`;
       }).join("");
@@ -774,6 +775,30 @@
       if (action === "use-invoice-profile") { invoiceForm(null, state.invoice_profiles.find((entry) => entry.id === id)); return true; }
       if (action === "mark-invoice-paid") { paymentForm(state.invoices.find((entry) => entry.id === id)); return true; }
       if (action === "generate-invoice") { await generateInvoice(state.invoices.find((entry) => entry.id === id)); return true; }
+      if (action === "delete-invoice") {
+        const invoice = state.invoices.find((entry) => entry.id === id);
+        if (!invoice) return true;
+        const status = computedStatus(invoice);
+        const paid = amountPaid(invoice.income_id);
+        if (paid > 0 || (status !== "pending" && status !== "overdue")) {
+          throw new Error("Only unpaid pending or overdue invoices can be deleted.");
+        }
+        const wordFiles = invoiceArtifacts(invoice.id).length;
+        const fileMessage = wordFiles ? ` and ${wordFiles} generated Word file${wordFiles === 1 ? "" : "s"}` : "";
+        if (!window.confirm(`Delete invoice ${invoice.invoice_number}? This will also delete its linked unpaid Income entry${fileMessage}. This cannot be undone.`)) return true;
+        if (state.demo) {
+          state.client_artifacts = state.client_artifacts.filter((entry) => entry.linked_invoice_id !== invoice.id);
+          state.invoice_items = state.invoice_items.filter((entry) => entry.invoice_id !== invoice.id);
+          state.income = state.income.filter((entry) => entry.id !== invoice.income_id);
+          state.invoices = state.invoices.filter((entry) => entry.id !== invoice.id);
+        } else {
+          await apiRequest(`/invoices/${encodeURIComponent(invoice.id)}`, { method: "DELETE" });
+          await loadData();
+        }
+        toast("Invoice and linked unpaid Income entry deleted.");
+        renderRoute();
+        return true;
+      }
       if (action === "add-client-artifact") { artifactForm(button.dataset.artifactType || "contract"); return true; }
       if (action === "add-summary-source") { const form = button.closest("form"); artifactForm("contract", form.elements.client_id.value); return true; }
       if (action === "add-invoice-line") { const form = button.closest("form"); $('[data-invoice-lines]', form).insertAdjacentHTML("beforeend", lineEditorRow({}, $$('[data-invoice-line]', form).length)); refreshInvoiceForm(form); return true; }

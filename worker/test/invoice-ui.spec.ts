@@ -19,3 +19,14 @@ describe("invoice folder picker", () => {
     expect(pickerId).toMatch(/^[A-Za-z0-9_-]+$/);
   });
 });
+
+describe("invoice deletion", () => {
+  it("offers a confirmed delete action that uses the invoice endpoint", () => {
+    const source = readFileSync(resolve(process.cwd(), "../admin/assets/invoice-ui.js"), "utf8");
+
+    expect(source).toContain('data-action="delete-invoice"');
+    expect(source).toContain("This cannot be undone.");
+    expect(source).toContain('method: "DELETE"');
+    expect(source).toContain("Invoice and linked unpaid Income entry deleted.");
+  });
+});

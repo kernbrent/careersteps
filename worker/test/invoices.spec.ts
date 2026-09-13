@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeInvoicePayload } from "../src/index";
+import { invoiceCanBeDeleted, normalizeInvoicePayload } from "../src/index";
 
 const baseInvoice = () => ({
   client_id: "client_12345678",
@@ -121,5 +121,14 @@ describe("invoice validation", () => {
       mark_paid_on_create: true,
       initial_payment_date: null,
     })).toThrow(/payment_date/i);
+  });
+
+  it("allows deletion only for unpaid pending or overdue invoices", () => {
+    expect(invoiceCanBeDeleted("pending", 0)).toBe(true);
+    expect(invoiceCanBeDeleted("overdue", 0)).toBe(true);
+    expect(invoiceCanBeDeleted("pending", 1)).toBe(false);
+    expect(invoiceCanBeDeleted("partial", 100)).toBe(false);
+    expect(invoiceCanBeDeleted("paid", 600)).toBe(false);
+    expect(invoiceCanBeDeleted("void", 0)).toBe(false);
   });
 });

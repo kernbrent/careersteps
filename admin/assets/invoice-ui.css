@@ -11,7 +11,7 @@
 }
 
 .invoice-folder-note span { color: var(--muted); font-size: .84rem; }
-.invoice-actions { min-width: 11rem; }
+.invoice-actions { min-width: 14rem; }
 .invoice-actions button:first-child { color: var(--green); }
 
 .invoice-profile-strip {
