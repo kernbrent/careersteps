@@ -1,0 +1,1638 @@
+{
+  "pages": [
+    {
+      "url": "https://www.choice1recruiting.com/",
+      "file": "index.html"
+    },
+    {
+      "url": "https://www.choice1recruiting.com/index.html",
+      "file": "index.html"
+    },
+    {
+      "url": "https://www.choice1recruiting.com/careers.html",
+      "file": "careers.html"
+    },
+    {
+      "url": "https://www.choice1recruiting.com/about-us.html",
+      "file": "about-us.html"
+    },
+    {
+      "url": "https://www.choice1recruiting.com/contact-us.html",
+      "file": "contact-us.html"
+    },
+    {
+      "url": "https://www.choice1recruiting.com/general-application-form.html",
+      "file": "general-application-form.html"
+    },
+    {
+      "url": "https://www.choice1recruiting.com/client-application.html",
+      "file": "client-application.html"
+    }
+  ],
+  "assets": [
+    {
+      "url": "https://irp.cdn-website.com/f9f53cbf/dms3rep/multi/choice1_logo.jpg",
+      "file": "/assets/0389407fa727ebd5d35f.jpg",
+      "bytes": 36829,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/f9f53cbf/site_favicon_16_1693948814000.ico",
+      "file": "/assets/bff91e1be144daf1fb45.ico",
+      "bytes": 9662,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/raleway/v34/1Ptug8zYS_SKggPNyC0ITw.woff2",
+      "file": "/assets/25a42624b9b8875bfd52.woff2",
+      "bytes": 48336,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/montserrat/v26/JTUSjIg1_i6t8kCHKm459Wlhyw.woff2",
+      "file": "/assets/c7586e5e5472e2109146.woff2",
+      "bytes": 33092,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/AdobeStock_300105981+-+Edited-1920w.png",
+      "file": "/assets/e848e309acd6e98453a7.png",
+      "bytes": 856023,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/choice1_logo-1920w.jpg",
+      "file": "/assets/9870ebbb46dd8b417a9d.jpg",
+      "bytes": 36829,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/choice1_logo-1920w-removebg-preview-1920w.png",
+      "file": "/assets/9ed20d8a3f9434d495f6.png",
+      "bytes": 128514,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/Photo1+%2871%29+%281%29-516w.png",
+      "file": "/assets/ae85daeb04b55c7979ca.png",
+      "bytes": 63675,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/f9f53cbf/dms3rep/multi/Photo1+%2871%29+%281%29.png",
+      "file": "/assets/90c2dfa7eca3484866bd.png",
+      "bytes": 128242,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/ckdYANbTIunZqyVGGRaK_Choice+One+Recruiting+Cover+Video.v2.0000000-1920w.jpg",
+      "file": "/assets/fbe32340c835f307783f.jpg",
+      "bytes": 311068,
+      "external": false
+    },
+    {
+      "url": "https://vid.cdn-website.com/f9f53cbf/videos/ckdYANbTIunZqyVGGRaK_Choice+One+Recruiting+Cover+Video-v.mp4",
+      "file": null,
+      "bytes": 28886338,
+      "external": true
+    },
+    {
+      "url": "https://irp.cdn-website.com/f9f53cbf/dms3rep/multi/image002.jpg",
+      "file": "/assets/d1a977e2936e61442999.jpg",
+      "bytes": 217917,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/image002-640w.jpg",
+      "file": "/assets/5dd6f2b280648603bd6c.jpg",
+      "bytes": 41289,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/image002-1920w.jpg",
+      "file": "/assets/c79b583526bb1082a3cc.jpg",
+      "bytes": 217917,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/f9f53cbf/dms3rep/multi/image007.jpg",
+      "file": "/assets/d318437057102d069c86.jpg",
+      "bytes": 286180,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/image007-640w.jpg",
+      "file": "/assets/afc33c6564a9b56b4c95.jpg",
+      "bytes": 57457,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/image007-1920w.jpg",
+      "file": "/assets/fe2bbbf25a5cbed1877c.jpg",
+      "bytes": 286086,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/f9f53cbf/dms3rep/multi/Photo1+-+2023-11-29T045144.391.jpg",
+      "file": "/assets/fea4129143872afe65c9.jpg",
+      "bytes": 39098,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/Photo1+-+2023-11-29T045144.391-640w.jpg",
+      "file": "/assets/267b4489e7d5eb5455b2.jpg",
+      "bytes": 39084,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/Photo1+-+2023-11-29T045144.391-1920w.jpg",
+      "file": "/assets/52f75faea9c643ce9ae7.jpg",
+      "bytes": 39084,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/choice1_logo-313w.jpg",
+      "file": "/assets/690005a0d85c8356a834.jpg",
+      "bytes": 8054,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/css2?family=Lobster+Two:wght@400;700&family=Raleway:wght@100..900&family=Creepster:wght@400&family=Creepster:wght@400&family=Roboto:wght@100;300;400;500;700;900&family=Lobster:wght@400&family=Lato:wght@100;300;400;700;900&family=Montserrat:wght@100..900&family=Arvo:wght@400;700&family=Oswald:wght@200..700&family=Source+Sans+Pro:wght@200;300;400;600;700;900&family=Eater:wght@400&subset=latin-ext&display=swap",
+      "file": "/assets/d9e816ca13e0ad8c353d.css",
+      "bytes": 64552,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/arvo/v23/tDbD2oWUg0MKqScQ7Q.woff2",
+      "file": "/assets/d1fa8f43432720103dd1.woff2",
+      "bytes": 17268,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/arvo/v23/tDbM2oWUg0MKoZw1-LPK8w.woff2",
+      "file": "/assets/0cdc346ecf1de7475a3a.woff2",
+      "bytes": 17348,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/creepster/v13/AlZy_zVUqJz4yMrniH4Rcn35.woff2",
+      "file": "/assets/93e0ba2b1690b80a2faf.woff2",
+      "bytes": 28120,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/eater/v27/mtG04_FCK7bOvqu_sXBAsQ.woff2",
+      "file": "/assets/c44886cb2f0c886f43ea.woff2",
+      "bytes": 19508,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/eater/v27/mtG04_FCK7bOvquxsXA.woff2",
+      "file": "/assets/024d72c9c71bb1b2109b.woff2",
+      "bytes": 41704,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/lato/v25/S6u8w4BMUTPHh30AUi-qJCY.woff2",
+      "file": "/assets/d97f234d529f9fdf9571.woff2",
+      "bytes": 5448,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/lato/v25/S6u8w4BMUTPHh30AXC-q.woff2",
+      "file": "/assets/f84227544d9506b2bda9.woff2",
+      "bytes": 21508,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/lato/v25/S6u9w4BMUTPHh7USSwaPGR_p.woff2",
+      "file": "/assets/3ad6a244d6ebaabf6d80.woff2",
+      "bytes": 5820,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/lato/v25/S6u9w4BMUTPHh7USSwiPGQ.woff2",
+      "file": "/assets/dd30ac69378947714f69.woff2",
+      "bytes": 23236,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/lato/v25/S6uyw4BMUTPHjxAwXjeu.woff2",
+      "file": "/assets/df646c4cbd5954d26d53.woff2",
+      "bytes": 5612,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/lato/v25/S6uyw4BMUTPHjx4wXg.woff2",
+      "file": "/assets/5a2d7502e510462e6267.woff2",
+      "bytes": 23580,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/lato/v25/S6u9w4BMUTPHh6UVSwaPGR_p.woff2",
+      "file": "/assets/7bcaecec30799323bb58.woff2",
+      "bytes": 5552,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/lato/v25/S6u9w4BMUTPHh6UVSwiPGQ.woff2",
+      "file": "/assets/8e339a7a968e0586ba48.woff2",
+      "bytes": 23040,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/lato/v25/S6u9w4BMUTPHh50XSwaPGR_p.woff2",
+      "file": "/assets/1b37250e35c3b0789e75.woff2",
+      "bytes": 5640,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/lato/v25/S6u9w4BMUTPHh50XSwiPGQ.woff2",
+      "file": "/assets/b48628b2e1cc28a98354.woff2",
+      "bytes": 22504,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/lobster/v32/neILzCirqoswsqX9zo-mM5Ez.woff2",
+      "file": "/assets/c931c5c31262c4f2becd.woff2",
+      "bytes": 14404,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/lobster/v32/neILzCirqoswsqX9zoamM5Ez.woff2",
+      "file": "/assets/838c83b72f22e9819beb.woff2",
+      "bytes": 39904,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/lobster/v32/neILzCirqoswsqX9zo2mM5Ez.woff2",
+      "file": "/assets/79cfcacbcad9e4d7f8ba.woff2",
+      "bytes": 13888,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/lobster/v32/neILzCirqoswsqX9zoymM5Ez.woff2",
+      "file": "/assets/89436b3690babbae7479.woff2",
+      "bytes": 27912,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/lobster/v32/neILzCirqoswsqX9zoKmMw.woff2",
+      "file": "/assets/76925717159f6d5c049d.woff2",
+      "bytes": 33844,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/lobstertwo/v22/BngMUXZGTXPUvIoyV6yN5-fN5qU.woff2",
+      "file": "/assets/4636b1a702a0c9cb4e17.woff2",
+      "bytes": 47200,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/lobstertwo/v22/BngRUXZGTXPUvIoyV6yN5-92w7CGwR0.woff2",
+      "file": "/assets/80a251399bdaa24f41fc.woff2",
+      "bytes": 47592,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/montserrat/v31/JTUSjIg1_i6t8kCHKm459WRhyzbi.woff2",
+      "file": "/assets/6e6ef4885dcce9ad1e76.woff2",
+      "bytes": 26368,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/montserrat/v31/JTUSjIg1_i6t8kCHKm459W1hyzbi.woff2",
+      "file": "/assets/d662a79e8f8fb3a7baea.woff2",
+      "bytes": 23828,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/montserrat/v31/JTUSjIg1_i6t8kCHKm459WZhyzbi.woff2",
+      "file": "/assets/7000d1fe5654e41de011.woff2",
+      "bytes": 12928,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/montserrat/v31/JTUSjIg1_i6t8kCHKm459Wdhyzbi.woff2",
+      "file": "/assets/0292c45a941404f54df3.woff2",
+      "bytes": 70688,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/montserrat/v31/JTUSjIg1_i6t8kCHKm459Wlhyw.woff2",
+      "file": "/assets/c799093f22e213778134.woff2",
+      "bytes": 37956,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/oswald/v57/TK3iWkUHHAIjg752FD8Ghe4.woff2",
+      "file": "/assets/73e8941fde5341549a09.woff2",
+      "bytes": 19404,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/oswald/v57/TK3iWkUHHAIjg752HT8Ghe4.woff2",
+      "file": "/assets/240d58c7095a1fd63098.woff2",
+      "bytes": 15688,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/oswald/v57/TK3iWkUHHAIjg752Fj8Ghe4.woff2",
+      "file": "/assets/043ea5eaae249cc6d25d.woff2",
+      "bytes": 7576,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/oswald/v57/TK3iWkUHHAIjg752Fz8Ghe4.woff2",
+      "file": "/assets/4ada4cc0912faad4d8aa.woff2",
+      "bytes": 23952,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/oswald/v57/TK3iWkUHHAIjg752GT8G.woff2",
+      "file": "/assets/0729bc66bac95882b162.woff2",
+      "bytes": 28488,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/raleway/v37/1Ptug8zYS_SKggPNyCAIT5lu.woff2",
+      "file": "/assets/2529858d93caca74cd85.woff2",
+      "bytes": 26988,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/raleway/v37/1Ptug8zYS_SKggPNyCkIT5lu.woff2",
+      "file": "/assets/40bae3a729d7b7f024c2.woff2",
+      "bytes": 25864,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/raleway/v37/1Ptug8zYS_SKggPNyCIIT5lu.woff2",
+      "file": "/assets/ec3bba119669a70c7a5b.woff2",
+      "bytes": 11384,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/raleway/v37/1Ptug8zYS_SKggPNyCMIT5lu.woff2",
+      "file": "/assets/edda867fca9578256cf6.woff2",
+      "bytes": 31480,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/raleway/v37/1Ptug8zYS_SKggPNyC0ITw.woff2",
+      "file": "/assets/50a02752181074357a1a.woff2",
+      "bytes": 48264,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3GUBGEe.woff2",
+      "file": "/assets/f958902f644a19a42c14.woff2",
+      "bytes": 36652,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3iUBGEe.woff2",
+      "file": "/assets/d6279cb63a1a2f1c1b41.woff2",
+      "bytes": 23664,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3CUBGEe.woff2",
+      "file": "/assets/1344b21febd3c1a2b826.woff2",
+      "bytes": 4348,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3-UBGEe.woff2",
+      "file": "/assets/47c7a779f2a5f7672961.woff2",
+      "bytes": 17624,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMawCUBGEe.woff2",
+      "file": "/assets/01b100185604a3275abe.woff2",
+      "bytes": 41348,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMaxKUBGEe.woff2",
+      "file": "/assets/568523dbe06f74ce285c.woff2",
+      "bytes": 20556,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3OUBGEe.woff2",
+      "file": "/assets/e4d10d4d817f6549563e.woff2",
+      "bytes": 14340,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3KUBGEe.woff2",
+      "file": "/assets/33957f619a4ca163448a.woff2",
+      "bytes": 29392,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2",
+      "file": "/assets/72f007392a516922eca8.woff2",
+      "bytes": 43136,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3i94_wmhduz8A.woff2",
+      "file": "/assets/1098fb855777cf9ba9a1.woff2",
+      "bytes": 4880,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3i94_wkxduz8A.woff2",
+      "file": "/assets/52c7b56d73718c269c66.woff2",
+      "bytes": 7776,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3i94_wmxduz8A.woff2",
+      "file": "/assets/dc9a9366d4afb805ecd5.woff2",
+      "bytes": 5900,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3i94_wlBduz8A.woff2",
+      "file": "/assets/28a1345afba5b9e7c15f.woff2",
+      "bytes": 6728,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3i94_wmBduz8A.woff2",
+      "file": "/assets/5ce601c82b63ea6b93a7.woff2",
+      "bytes": 5764,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3i94_wmRduz8A.woff2",
+      "file": "/assets/c543e9b910d43646e03c.woff2",
+      "bytes": 22056,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3i94_wlxdu.woff2",
+      "file": "/assets/41416b8f5f1d8372060a.woff2",
+      "bytes": 14436,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3ik4zwmhduz8A.woff2",
+      "file": "/assets/2459185c051dbe278461.woff2",
+      "bytes": 5036,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3ik4zwkxduz8A.woff2",
+      "file": "/assets/40317f81caa5867276e3.woff2",
+      "bytes": 7876,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3ik4zwmxduz8A.woff2",
+      "file": "/assets/3752c9292f17f5e7920d.woff2",
+      "bytes": 6036,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3ik4zwlBduz8A.woff2",
+      "file": "/assets/fa99e1863a585d540547.woff2",
+      "bytes": 7020,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3ik4zwmBduz8A.woff2",
+      "file": "/assets/06a12c3d690f438c6273.woff2",
+      "bytes": 5868,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3ik4zwmRduz8A.woff2",
+      "file": "/assets/d6b64dc360a39c7d106f.woff2",
+      "bytes": 22984,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3ik4zwlxdu.woff2",
+      "file": "/assets/0ee96c526acea62b9f01.woff2",
+      "bytes": 14792,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xK3dSBYKcSV-LCoeQqfX1RYOo3qNa7lqDY.woff2",
+      "file": "/assets/f0630c77c3c25b932de8.woff2",
+      "bytes": 5036,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xK3dSBYKcSV-LCoeQqfX1RYOo3qPK7lqDY.woff2",
+      "file": "/assets/67163833c7a1625d6282.woff2",
+      "bytes": 8044,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xK3dSBYKcSV-LCoeQqfX1RYOo3qNK7lqDY.woff2",
+      "file": "/assets/756431aadb8f44fa7d16.woff2",
+      "bytes": 6032,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xK3dSBYKcSV-LCoeQqfX1RYOo3qO67lqDY.woff2",
+      "file": "/assets/86f48ffe1924e95bf4ed.woff2",
+      "bytes": 7048,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xK3dSBYKcSV-LCoeQqfX1RYOo3qN67lqDY.woff2",
+      "file": "/assets/5f53ace0fa3317ac7a3d.woff2",
+      "bytes": 5840,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xK3dSBYKcSV-LCoeQqfX1RYOo3qNq7lqDY.woff2",
+      "file": "/assets/21254fcd19790955ab72.woff2",
+      "bytes": 23124,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xK3dSBYKcSV-LCoeQqfX1RYOo3qOK7l.woff2",
+      "file": "/assets/e48e47267d9e1af54ba2.woff2",
+      "bytes": 14868,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3i54rwmhduz8A.woff2",
+      "file": "/assets/c225027712faf73eb314.woff2",
+      "bytes": 5044,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3i54rwkxduz8A.woff2",
+      "file": "/assets/feaf5fc988f9d78fab75.woff2",
+      "bytes": 8024,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3i54rwmxduz8A.woff2",
+      "file": "/assets/f2268651d8553278ab7c.woff2",
+      "bytes": 5992,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3i54rwlBduz8A.woff2",
+      "file": "/assets/0923e1eed5bec3b39eed.woff2",
+      "bytes": 7068,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3i54rwmBduz8A.woff2",
+      "file": "/assets/97a1b6e081ce4fe07251.woff2",
+      "bytes": 5852,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3i54rwmRduz8A.woff2",
+      "file": "/assets/5b75bf2b6952483098e5.woff2",
+      "bytes": 23112,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3i54rwlxdu.woff2",
+      "file": "/assets/c8b92342619c5bbc2ef0.woff2",
+      "bytes": 14876,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwmhduz8A.woff2",
+      "file": "/assets/f8d3109f842f407db444.woff2",
+      "bytes": 5008,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwkxduz8A.woff2",
+      "file": "/assets/50b82c8342ce599e38a2.woff2",
+      "bytes": 7948,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwmxduz8A.woff2",
+      "file": "/assets/31f9d6d34029f09b5007.woff2",
+      "bytes": 5996,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwlBduz8A.woff2",
+      "file": "/assets/df9d05d3e3e0dc381c4b.woff2",
+      "bytes": 6944,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwmBduz8A.woff2",
+      "file": "/assets/9928468881e6966737e9.woff2",
+      "bytes": 5824,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwmRduz8A.woff2",
+      "file": "/assets/77fe22187c80b2903dad.woff2",
+      "bytes": 22928,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwlxdu.woff2",
+      "file": "/assets/6c1a875221ec22dd27d0.woff2",
+      "bytes": 14724,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3iu4nwmhduz8A.woff2",
+      "file": "/assets/92de728ef710627dbd3f.woff2",
+      "bytes": 4824,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3iu4nwkxduz8A.woff2",
+      "file": "/assets/cd20b4f8a9f67ff51214.woff2",
+      "bytes": 7596,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3iu4nwmxduz8A.woff2",
+      "file": "/assets/015e344e613160d13443.woff2",
+      "bytes": 5812,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3iu4nwlBduz8A.woff2",
+      "file": "/assets/3a4567c2292efd599428.woff2",
+      "bytes": 6644,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3iu4nwmBduz8A.woff2",
+      "file": "/assets/caf32b81c64d636e9918.woff2",
+      "bytes": 5648,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3iu4nwmRduz8A.woff2",
+      "file": "/assets/27b785c8a25ad39d0824.woff2",
+      "bytes": 22124,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/fonts/s/sourcesanspro/v23/6xKydSBYKcSV-LCoeQqfX1RYOo3iu4nwlxdu.woff2",
+      "file": "/assets/4443c45f8df4c884304b.woff2",
+      "bytes": 14204,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/f9f53cbf/fonts/Abril_Display_Bold-ef13_400.otf",
+      "file": "/assets/97713b43eff432b8467f.otf",
+      "bytes": 125168,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/f9f53cbf/fonts/Abril_Display_Regular-e9ef_400.otf",
+      "file": "/assets/75f16132f6da3cffcfeb.otf",
+      "bytes": 119612,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/mnlt/production/6522/_dm/s/rt/dist/css/d-css-runtime-desktop-one-package-structured-global.min.css",
+      "file": "/assets/97c3bd9f4577a45129c7.css",
+      "bytes": 218059,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/fonts/dm-social-font.woff?mxo7pn",
+      "file": "/assets/63d96b7a5e534e578204.woff",
+      "bytes": 5796,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/fonts/dm-social-font.ttf?mxo7pn",
+      "file": "/assets/55ac5af56b62f12b2c50.ttf",
+      "bytes": 5720,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/fonts/dm-font.woff?v=12",
+      "file": "/assets/c5116de1680fd86bca48.woff",
+      "bytes": 167684,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/fonts/dm-font.ttf?v=12",
+      "file": "/assets/85b62d45ba62300a895e.ttf",
+      "bytes": 167608,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/fonts/LabelSansVF.woff?v=1",
+      "file": "/assets/bcd2c55cd32961bb68b7.woff",
+      "bytes": 33120,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/fonts/LabelSansVF.woff2?v=1",
+      "file": "/assets/6892de496944cc22f8e7.woff2",
+      "bytes": 27704,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/fonts/social_icons/19052025/dm-social-icons.ttf",
+      "file": "/assets/bdcfdd0fffc5c34f70e4.ttf",
+      "bytes": 7248,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/fonts/social_icons/19052025/dm-social-icons.woff",
+      "file": "/assets/6c4f38585e535485b2f6.woff",
+      "bytes": 7324,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/fonts/social_icons/19052025/dm-social-icons.svg#dm-social-icons",
+      "file": "/assets/cb7819c9640c4b3ece33.svg",
+      "bytes": 20923,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/fonts/dm-common-icons.ttf?5f0fg",
+      "file": "/assets/e6e811d9965ee4e21794.ttf",
+      "bytes": 2368,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/fonts/dm-common-icons.woff?5f0fg",
+      "file": "/assets/39250ec50c1802af2706.woff",
+      "bytes": 2444,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/fonts/fontawesome-webfont.eot?v=6",
+      "file": "/assets/e228a7c2b0634d9e13c5.eot",
+      "bytes": 165742,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/fonts/fontawesome-webfont.eot?#iefix&v=6",
+      "file": "/assets/a6a74cd7a3e847367d9c.eot",
+      "bytes": 165742,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/fonts/fontawesome-webfont.woff?v=6",
+      "file": "/assets/b5c70154f6c80cb1d763.woff",
+      "bytes": 98024,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/fonts/fontawesome-webfont.ttf?v=6",
+      "file": "/assets/47664a4c9885aa3e3cea.ttf",
+      "bytes": 165548,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/fonts/fontawesome-webfont.svg#fontawesomeregular?v=6",
+      "file": "/assets/7c50ef2b798f0411ce4b.svg",
+      "bytes": 444379,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/fonts/flexslider-icon.woff",
+      "file": "/assets/88fc13ca11b321480090.woff",
+      "bytes": 1268,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/runtime/button-widget-start-icon.svg",
+      "file": "/assets/25a47f3c20ff2c009e30.svg",
+      "bytes": 769,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/runtime/map-widget-icon.svg",
+      "file": "/assets/18451ad0c88a36c9a3df.svg",
+      "bytes": 739,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/runtime/clicktocall-widget-icon.svg",
+      "file": "/assets/788042a4a9e399684dfb.svg",
+      "bytes": 970,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/runtime/email-widget-icon.svg",
+      "file": "/assets/03d7362ba3b433afff02.svg",
+      "bytes": 751,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Museo_Slab_500.otf",
+      "file": "/assets/a4ada5c2cb8e4740f40f.otf",
+      "bytes": 62180,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/runtime-img/arrowBlackRight.png",
+      "file": "/assets/d4d4bb1671dfd91526e8.png",
+      "bytes": 183,
+      "external": false
+    },
+    {
+      "url": "https://s3.amazonaws.com/dudamobile-themes/Icons/searchBtn.png",
+      "file": "/assets/1e7e43a3afb7f9a3e5be.png",
+      "bytes": 1750,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/runtime-img/restaurantMenu/menu-image1.jpg",
+      "file": "/assets/d5867e0dcb7b549cfd94.jpg",
+      "bytes": 834,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-lightitalic-webfont.eot",
+      "file": "/assets/6ecd3a6c64a337b901d8.eot",
+      "bytes": 26050,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-lightitalic-webfont.eot?#iefix",
+      "file": "/assets/e694847cc7b8b3d84eb6.eot",
+      "bytes": 26050,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-lightitalic-webfont.woff",
+      "file": "/assets/cdf3b0dd3d6164cb56a8.woff",
+      "bytes": 15452,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-lightitalic-webfont.ttf",
+      "file": "/assets/9c27262fc0dac794564b.ttf",
+      "bytes": 25716,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-light-webfont.eot",
+      "file": "/assets/1f0f00fd43feae215057.eot",
+      "bytes": 23086,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-light-webfont.eot?#iefix",
+      "file": "/assets/bc8b6cfe8289723fb47b.eot",
+      "bytes": 23086,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-light-webfont.woff",
+      "file": "/assets/b12cc35d3bc89e0d7703.woff",
+      "bytes": 13708,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-light-webfont.ttf",
+      "file": "/assets/a1f49565f76271136a76.ttf",
+      "bytes": 22748,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-italic-webfont.eot",
+      "file": "/assets/43a11fba4c34f1214973.eot",
+      "bytes": 25946,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-italic-webfont.eot?#iefix",
+      "file": "/assets/f1023637946d9645b592.eot",
+      "bytes": 25946,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-italic-webfont.woff",
+      "file": "/assets/d26c5bf3f807beae8ee3.woff",
+      "bytes": 15400,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-italic-webfont.ttf",
+      "file": "/assets/22d04ec475d30fc5f3e0.ttf",
+      "bytes": 25636,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-regular-webfont.eot",
+      "file": "/assets/e2eb58a4f931a9f41957.eot",
+      "bytes": 23106,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-regular-webfont.eot?#iefix",
+      "file": "/assets/b9221173441efd9e8419.eot",
+      "bytes": 23106,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-regular-webfont.woff",
+      "file": "/assets/73c67958560f7c8f5a8d.woff",
+      "bytes": 13808,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-regular-webfont.ttf",
+      "file": "/assets/771602bd0dc018635fcd.ttf",
+      "bytes": 22792,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-bolditalic-webfont.eot",
+      "file": "/assets/b9788a5360a2e3f2fa5b.eot",
+      "bytes": 25662,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-bolditalic-webfont.eot?#iefix",
+      "file": "/assets/63b373313a013124b7d9.eot",
+      "bytes": 25662,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-bolditalic-webfont.woff",
+      "file": "/assets/72f84eaa7b4c591a9220.woff",
+      "bytes": 15208,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-bolditalic-webfont.ttf",
+      "file": "/assets/fc3a06789f65e37413b7.ttf",
+      "bytes": 25332,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-bold-webfont.eot",
+      "file": "/assets/8d4c5a65f94c080cc8ee.eot",
+      "bytes": 23426,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-bold-webfont.eot?#iefix",
+      "file": "/assets/7feeeaf0a3f29234f184.eot",
+      "bytes": 23426,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-bold-webfont.woff",
+      "file": "/assets/bf2ee8aff918160f6f79.woff",
+      "bytes": 13856,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-bold-webfont.ttf",
+      "file": "/assets/40f3ecd8549ac36801cc.ttf",
+      "bytes": 23124,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-extrabold-webfont.eot",
+      "file": "/assets/38c07700f8207c23849d.eot",
+      "bytes": 41378,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-extrabold-webfont.eot?#iefix",
+      "file": "/assets/9972c37c39d75bda037f.eot",
+      "bytes": 41378,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-extrabold-webfont.woff",
+      "file": "/assets/04053d6abdc0a2ea81f5.woff",
+      "bytes": 22876,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Opes_Sans_Hebrew/opensanshebrew-extrabold-webfont.ttf",
+      "file": "/assets/21926350f55a221bf359.ttf",
+      "bytes": 41020,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Alef-Regular.woff2",
+      "file": "/assets/ad12448bd526142959e3.woff2",
+      "bytes": 35764,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/Alef-Bold.woff2",
+      "file": "/assets/71a69a8b2eec94e95397.woff2",
+      "bytes": 34468,
+      "external": false
+    },
+    {
+      "url": "https://static-cdn.dwhitelabel.com/fonts/CalSans-Regular.woff2?v=1",
+      "file": "/assets/c92dc798b650772bef97.woff2",
+      "bytes": 37412,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/fonts/dm-common-icons.svg?5f0fg#dm-common-icons",
+      "file": "/assets/0b9bb5e63c17295ea622.svg",
+      "bytes": 5069,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/e2fc0b95199b08bc.woff",
+      "file": "/assets/9e92bbe1ca6b4553968f.woff",
+      "bytes": 20105,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/a38f38c55b7a57a.woff",
+      "file": "/assets/cdd82c360e331b055be9.woff",
+      "bytes": 14721,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/ec49acf58c10f8a9.woff",
+      "file": "/assets/2aaa158f232a57415373.woff",
+      "bytes": 15449,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/bac7cf2e21ae24d1.woff",
+      "file": "/assets/3fd39c4e56947aa7a382.woff",
+      "bytes": 15889,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/f5c444da86865f17.woff",
+      "file": "/assets/c039c3e439e51b7ef79f.woff",
+      "bytes": 5369,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/f5c444da86865f171.woff",
+      "file": "/assets/06c861580065a5652266.woff",
+      "bytes": 28625,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/f889a07745b512491.woff",
+      "file": "/assets/9b230d2e7809a6d17a2e.woff",
+      "bytes": 111117,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/f889a07745b51249.woff",
+      "file": "/assets/98048c91c539bf85be8d.woff",
+      "bytes": 62745,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/107a32db89f1285b1.woff",
+      "file": "/assets/6ca00deffc0c36986e36.woff",
+      "bytes": 103257,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/107a32db89f1285b4.woff",
+      "file": "/assets/7c4c010a33dbd7833d8d.woff",
+      "bytes": 54385,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/e5fc7a757e7988.woff",
+      "file": "/assets/be8bf68154f5eda8a58c.woff",
+      "bytes": 99985,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/e5fc7a757e79881.woff",
+      "file": "/assets/0b8a8690f8835679bd13.woff",
+      "bytes": 51505,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/bc3ca414adf5d1d.woff",
+      "file": "/assets/477163cea302adc2d64c.woff",
+      "bytes": 92329,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/bc3ca414adf5d1d1.woff",
+      "file": "/assets/ca5252283d9f16d232a5.woff",
+      "bytes": 49845,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/28f652d19e80fbde1.woff",
+      "file": "/assets/8072e83b6bec791bc47e.woff",
+      "bytes": 37213,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/28f652d19e80fbde11.woff",
+      "file": "/assets/9c645c69e8585717a591.woff",
+      "bytes": 36421,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/cd26fb9258467dc1b.woff",
+      "file": "/assets/db14bd5341be3bef03e5.woff",
+      "bytes": 31421,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/cd26fb9258467dcb2.woff",
+      "file": "/assets/358e85dfdf7bd4e20165.woff",
+      "bytes": 31613,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/48066a2ff839778c2.woff",
+      "file": "/assets/13119ba20b9834133ec0.woff",
+      "bytes": 35809,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/48066a2ff839778c.woff",
+      "file": "/assets/326c7a91ae880ebede63.woff",
+      "bytes": 34581,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/6d3318b718754b78.woff",
+      "file": "/assets/d524838f81b18555f2b9.woff",
+      "bytes": 35029,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/6d3318b718754b781.woff",
+      "file": "/assets/bf920c066d0ca644fb4c.woff",
+      "bytes": 34793,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/9d22fae1754942f63.woff",
+      "file": "/assets/a0d58ddb24641c07df95.woff",
+      "bytes": 77273,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/9d22fae1754942f6.woff",
+      "file": "/assets/43ceedb55ccdcba9e38f.woff",
+      "bytes": 38405,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/325a0ea84e3a993.woff",
+      "file": "/assets/70ec54df7d12a49ef8c4.woff",
+      "bytes": 66977,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/325a0ea84e3a99.woff",
+      "file": "/assets/52442e5468eb9a30b888.woff",
+      "bytes": 33389,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/53198ebebffbde25.woff",
+      "file": "/assets/f48ab2b9feaa84b3223a.woff",
+      "bytes": 32301,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/53198ebebffbde21.woff",
+      "file": "/assets/6fcf8031ef9eadc8e2bb.woff",
+      "bytes": 42741,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/9f2d68f1d69270015.woff",
+      "file": "/assets/196aeb0a3c7fc813ad5f.woff",
+      "bytes": 29889,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/9f2d68f1d69270018.woff",
+      "file": "/assets/51847a54539d57700ee8.woff",
+      "bytes": 40641,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/d843412155f4ee4b3.woff",
+      "file": "/assets/fc135331c325ab05435d.woff",
+      "bytes": 29889,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/d843412155f4ee4b.woff",
+      "file": "/assets/69dac2af18cd118a2331.woff",
+      "bytes": 40101,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/a81a5e6e6b2de22.woff",
+      "file": "/assets/00e195135ddee0a1d49c.woff",
+      "bytes": 29413,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/a81a5e6e6b2de224.woff",
+      "file": "/assets/57b49560daa52bb4f495.woff",
+      "bytes": 39609,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/a4ba60ff9fc73cf87.woff",
+      "file": "/assets/f746bdb472329c84686f.woff",
+      "bytes": 30589,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/a4ba60ff9fc73cf85.woff",
+      "file": "/assets/703f51118497263a5c47.woff",
+      "bytes": 40749,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/47b9a7080319bd8b9.woff",
+      "file": "/assets/fc7a3865d517b98efb9b.woff",
+      "bytes": 23997,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/47b9a7080319bd8b.woff",
+      "file": "/assets/5af71988be54b0b34e1a.woff",
+      "bytes": 33805,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/1a31561daae4e6f6.woff",
+      "file": "/assets/ecaa68387e23b797c803.woff",
+      "bytes": 22025,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/1a31561daae4e6f5.woff",
+      "file": "/assets/5576b8c84455cf9af699.woff",
+      "bytes": 29381,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/3b8723a173ab23db6.woff",
+      "file": "/assets/319b67e9311ed8add989.woff",
+      "bytes": 20249,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/3b8723a173ab23db9.woff",
+      "file": "/assets/8100902c18ff02d84b6c.woff",
+      "bytes": 27353,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/5128cd07406988e2.woff",
+      "file": "/assets/128d59294ba79a48ead7.woff",
+      "bytes": 23601,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/5128cd07406988e3.woff",
+      "file": "/assets/d41bcf23e5a617b26e5f.woff",
+      "bytes": 31821,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/a7bbb29f8e80de7b.woff",
+      "file": "/assets/10694eb2b2d77a6118de.woff",
+      "bytes": 66073,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/a7bbb29f8e80de7b4.woff",
+      "file": "/assets/87cf2e708c73772fe9d8.woff",
+      "bytes": 87593,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/31691cf572f5bde34.woff",
+      "file": "/assets/41257a6784b659e68b69.woff",
+      "bytes": 49229,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/31691cf572f5bde8.woff",
+      "file": "/assets/1556cf16d8fe09b019b9.woff",
+      "bytes": 64921,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/1291d1e7f9fa73947.woff",
+      "file": "/assets/df3886a6fa3ec3f4050c.woff",
+      "bytes": 53741,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/1291d1e7f9fa7394.woff",
+      "file": "/assets/ce124e8ecdcc3ded4385.woff",
+      "bytes": 70021,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/3943a091ad116f3a3.woff",
+      "file": "/assets/d2d4b861bed604f877ba.woff",
+      "bytes": 41085,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/fonts/additionalfonts/3943a091ad116f3a1.woff",
+      "file": "/assets/6c10cd7f04d6d10a97b5.woff",
+      "bytes": 53661,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/f9f53cbf/files/f9f53cbf_withFlex_1.min.css?v=241",
+      "file": "/assets/64f0231a857c9126bbd9.css",
+      "bytes": 274258,
+      "external": false
+    },
+    {
+      "url": "https://dp-cdn.multiscreensite.com/bfsImages/sunset-hair.jpg",
+      "file": "/assets/e001eb29d28ce620fbd9.jpg",
+      "bytes": 344782,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/themes/sections/sectionImg5.jpg",
+      "file": "/assets/c4975719762c69f62127.jpg",
+      "bytes": 18014,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/themes/sections/click2Call.jpg",
+      "file": "/assets/79082fea261ecbaf9973.jpg",
+      "bytes": 116520,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/themes/sections/halloween_call.jpg",
+      "file": "/assets/21dbbd8375cd64f9ad69.jpg",
+      "bytes": 80778,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/themes/sections/Trick-or-Treat.jpg",
+      "file": "/assets/dd82dced5fd5d35196bf.jpg",
+      "bytes": 46150,
+      "external": false
+    },
+    {
+      "url": "https://dp-cdn.multiscreensite.com/gallery/pink_pattern.png",
+      "file": "/assets/6a064b7fc42f305b1a12.png",
+      "bytes": 1225,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/themes/sections/holiday/thanksgivingBg.jpg",
+      "file": "/assets/b6edcb6d0b650771d907.jpg",
+      "bytes": 160562,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/themes/sections/holiday/holidaySnow.png",
+      "file": "/assets/c198f5be6a07adabfbfa.png",
+      "bytes": 2443,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/themes/sections/holiday/smbSaturdayBg.jpg",
+      "file": "/assets/798e04b95435d09dfb8e.jpg",
+      "bytes": 113476,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/themes/sections/holiday/cyberMondayBg.jpg",
+      "file": "/assets/075ef323453123b79a08.jpg",
+      "bytes": 77820,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/themes/sections/aidsBg.png",
+      "file": "/assets/983e54e64ec80632dfbf.png",
+      "bytes": 1438,
+      "external": false
+    },
+    {
+      "url": "https://dp-cdn.multiscreensite.com/gallery/bg_37.png",
+      "file": "/assets/eac2a036d0641ffdf726.png",
+      "bytes": 112,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/runtime-img/galleryLoader.gif",
+      "file": "/assets/953432ae1b491147efc2.gif",
+      "bytes": 2897,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/runtime-img/imgPlaceholder2.png",
+      "file": "/assets/680d623af35d5b089888.png",
+      "bytes": 474,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/runtime-img/imgPlaceholder1.png",
+      "file": "/assets/3f19daa742fb7700f847.png",
+      "bytes": 617,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/runtime-img/imgPlaceholder3.png",
+      "file": "/assets/07bf04ae6709bbcdcc1e.png",
+      "bytes": 618,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/runtime-img/yelpLogo.png",
+      "file": "/assets/c7f6c5eb29cc1a5eb5d4.png",
+      "bytes": 995,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/themes/wedding/fotolia/wedding-hero.jpg",
+      "file": "/assets/6e5d2454a3ce00e6d310.jpg",
+      "bytes": 166638,
+      "external": false
+    },
+    {
+      "url": "https://dd-cdn.multiscreensite.com/themes/wedding/fotolia/wedding-img3.jpg",
+      "file": "/assets/69532ff5368125c91906.jpg",
+      "bytes": 68048,
+      "external": false
+    },
+    {
+      "url": "https://irt-cdn.multiscreensite.com/exhibition_template/dms3rep/multi/new_02-2000x1328.jpg",
+      "file": "/assets/fcd292256eb64545261c.jpg",
+      "bytes": 182841,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/f9f53cbf/files/f9f53cbf_home_withFlex_1.min.css?v=241",
+      "file": "/assets/1ac88f89fa37b062b2a6.css",
+      "bytes": 21816,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/md/dmtmpl/19f5565e-40ae-473a-9eab-baa292a33026/dms3rep/multi/opt/new_01-2000x1328-1920w.jpg",
+      "file": "/assets/e01c5c2875bc2006fa1e.jpg",
+      "bytes": 119133,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/Untitled+design-1920w.png",
+      "file": "/assets/0121bf6a84b4c8880416.png",
+      "bytes": 725,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/md/pexels/dms3rep/multi/opt/pexels-photo-4963437-1920w.jpeg",
+      "file": "/assets/b7cee09d4b43f9051c1e.jpeg",
+      "bytes": 233768,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/C1+banner-1920w.png",
+      "file": "/assets/e461958cd71e66539eb7.png",
+      "bytes": 4267,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/md/dmtmpl/19f5565e-40ae-473a-9eab-baa292a33026/dms3rep/multi/opt/contact-1200x800-1920w.jpg",
+      "file": "/assets/933f56ea8a5d77c1da66.jpg",
+      "bytes": 66051,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/image001-1920w.jpg",
+      "file": "/assets/45bdbf10179865d65e96.jpg",
+      "bytes": 245067,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/image003-1920w.jpg",
+      "file": "/assets/df3b2aabf68072ab42a3.jpg",
+      "bytes": 269219,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/image005-1920w.jpg",
+      "file": "/assets/04c8c0593a13cf2039f8.jpg",
+      "bytes": 293650,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/image008-1920w.jpg",
+      "file": "/assets/4e47e939470a15d5408a.jpg",
+      "bytes": 27847,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/Photo1+-+2023-11-25T110453.635-1920w.jpg",
+      "file": "/assets/aef533ac56524e8b9af0.jpg",
+      "bytes": 75931,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/libs/jquery/jquery-3.7.0.min.js",
+      "file": "/assets/b8398a83ab6e493e9f53.js",
+      "bytes": 87462,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/mnlt/production/6522/_dm/s/rt/dist/scripts/d-js-one-runtime-unified-desktop.min.js",
+      "file": "/assets/91fa61e2446e4ba20977.js",
+      "bytes": 341150,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/mnlt/production/6522/_dm/s/rt/dist/scripts/d-js-jquery-migrate.min.js",
+      "file": "/assets/44fe1fbc7f2c784fb46e.js",
+      "bytes": 15994,
+      "external": false
+    },
+    {
+      "url": "https://irp.cdn-website.com/f9f53cbf/files/f9f53cbf_1.min.css?v=241",
+      "file": "/assets/ea8a1c045f55d7425ee4.css",
+      "bytes": 274258,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/image015-2880w.jpg",
+      "file": "/assets/3e3c433f7c6795436b48.jpg",
+      "bytes": 169624,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/Photo1+%2871%29+%281%29-1920w.png",
+      "file": "/assets/debd4552790dcab91a6d.png",
+      "bytes": 128242,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/Photo1+-+2023-11-25T110004.425-2880w.jpg",
+      "file": "/assets/02e2e324b8b5d27b92c5.jpg",
+      "bytes": 267717,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/md/dmtmpl/19f5565e-40ae-473a-9eab-baa292a33026/dms3rep/multi/opt/contact-1200x800-2880w.jpg",
+      "file": "/assets/f0dc742cb2455e23bbbe.jpg",
+      "bytes": 66051,
+      "external": false
+    },
+    {
+      "url": "https://lirp.cdn-website.com/f9f53cbf/dms3rep/multi/opt/image006-2880w.jpg",
+      "file": "/assets/414f9bceca4d0f5a52a3.jpg",
+      "bytes": 237429,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/mnlt/production/6525/_dm/s/rt/dist/css/d-css-runtime-desktop-one-package-structured-global.min.css",
+      "file": "/assets/40d9973b2db52dfabe94.css",
+      "bytes": 218059,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/mnlt/production/6525/_dm/s/rt/dist/scripts/d-js-one-runtime-unified-desktop.min.js",
+      "file": "/assets/85aae5fa21d87f9db37b.js",
+      "bytes": 341150,
+      "external": false
+    },
+    {
+      "url": "https://static.cdn-website.com/mnlt/production/6525/_dm/s/rt/dist/scripts/d-js-jquery-migrate.min.js",
+      "file": "/assets/09eb6cd602096a5af4c6.js",
+      "bytes": 15994,
+      "external": false
+    }
+  ],
+  "failures": [
+    "Error: 403 https://static.cdn-website.com/fonts/dm-social-font.svg?mxo7pn#dm-font",
+    "Error: 403 https://static.cdn-website.com/fonts/dm-font.svg?v=12#dm-font",
+    "Error: 403 https://irp.cdn-website.com/WIDGET_CSS/fc61911f6fee079aff0228e25d4113e9.css",
+    "Error: 403 https://irp.cdn-website.com/WIDGET_CSS/f1bcf615b1383fb1a99e010bc07da7ba.css",
+    "Error: 403 https://irp.cdn-website.com/WIDGET_CSS/704d13e7c8456a28f76b0acf48e5ca46.css",
+    "Error: 403 https://static.cdn-website.com/mnlt/production/6525"
+  ]
+}
