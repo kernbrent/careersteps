@@ -321,6 +321,10 @@ h3 {
   gap: 1.25rem;
 }
 
+.card-grid-two {
+  grid-template-columns: repeat(2, 1fr);
+}
+
 .card {
   padding: 1.65rem;
   background: var(--white);
