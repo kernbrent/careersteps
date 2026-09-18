@@ -111,7 +111,7 @@ function assertMime(type: ArtifactType, mime: string): void {
       ? INVOICE_MIME_TYPES
       : GENERAL_MIME_TYPES;
   if (!allowed.has(mime)) {
-    throw new AdminError(415, "UNSUPPORTED_FILE", "That file format is not supported for this type of document.");
+    throw new AdminError(415, "UNSUPPORTED_FILE", type === "logo" || type === "signature" ? "The selected logo or signature is not a PNG or JPEG image. Edit the invoice to choose an uploaded image, or use a direct image URL instead of a website homepage." : "That file format is not supported for this type of document.");
   }
 }
 
