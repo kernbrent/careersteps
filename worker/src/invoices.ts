@@ -383,6 +383,8 @@ export async function createInvoice(request: Request, env: Env): Promise<Respons
 }
 
 export async function updateInvoice(request: Request, env: Env, invoiceId: string): Promise<Response> {
+  const pendingEmail = await env.DB.prepare("SELECT id FROM invoice_email_operations WHERE invoice_id=?1 AND status='pending'").bind(invoiceId).first();
+  if (pendingEmail) throw new AdminError(409, "EMAIL_IN_PROGRESS", "Resolve the unconfirmed email before editing this invoice. Retry checks its original recipient and attachment.");
   const payload = normalizeInvoicePayload(await readAdminJson(request));
   if (payload.mark_paid_on_create) {
     throw new AdminError(422, "INVALID_INVOICE", "Use the Mark paid action for an existing invoice.");
@@ -486,6 +488,8 @@ export async function markInvoicePaid(request: Request, env: Env, invoiceId: str
 }
 
 export async function deleteInvoice(env: Env, invoiceId: string): Promise<Response> {
+  const emailOperation = await env.DB.prepare("SELECT id FROM invoice_email_operations WHERE invoice_id=?1 UNION ALL SELECT id FROM invoices WHERE id=?1 AND email_message_id IS NOT NULL").bind(invoiceId).first();
+  if (emailOperation) throw new AdminError(409, "INVOICE_EMAIL_RETAINED", "An emailed invoice or unconfirmed email must be retained for the billing record.");
   const existing = await env.DB.prepare(
     `SELECT invoices.id, invoices.income_id, invoices.invoice_number, invoices.status,
        COALESCE((SELECT SUM(amount) FROM income_payments WHERE income_id = invoices.income_id), 0) AS paid_amount

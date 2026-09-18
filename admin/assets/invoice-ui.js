@@ -97,19 +97,24 @@
         const status = computedStatus(invoice);
         const documents = invoiceArtifacts(invoice.id).length;
         const paid = amountPaid(invoice.income_id);
-        const haystack = [invoice.invoice_number, clientName(invoice.client_id), invoice.contract_name, invoice.period_start, invoice.period_end, status].join(" ").toLowerCase();
+        const haystack = [invoice.invoice_number, clientName(invoice.client_id), invoice.contract_name, invoice.period_start, invoice.period_end, status, invoice.emailed_at ? "emailed" : "not emailed", invoice.emailed_to].join(" ").toLowerCase();
         return `<tr data-search-row="${escapeHtml(haystack)}">
           <td><strong>${escapeHtml(invoice.invoice_number)}</strong><small>Created ${shortDate(invoice.created_date)}</small></td>
           <td><strong>${escapeHtml(clientName(invoice.client_id))}</strong><small>${escapeHtml(projectName(invoice.project_id))}</small></td>
           <td><strong>${escapeHtml(invoice.contract_name)}</strong><small>${shortDate(invoice.period_start)} - ${shortDate(invoice.period_end)}</small></td>
-          <td>${statusBadge(status)}<small>${invoice.due_date ? `Due ${shortDate(invoice.due_date)}` : escapeHtml(invoice.payment_terms || "")}</small></td>
+          <td>${statusBadge(status)}<small>${invoice.due_date ? `Due ${shortDate(invoice.due_date)}` : escapeHtml(invoice.payment_terms || "")}</small>
+            ${invoice.emailed_at ? `<span class="receipt-badge receipt-present">Emailed</span><small>${escapeHtml(new Date(invoice.emailed_at).toLocaleString(undefined, { timeZoneName: "short" }))}</small><small>To: ${escapeHtml(invoice.emailed_to)}</small><details><summary>Email details</summary><small>CC: admin@careersteps.net</small><small>Message ID: ${escapeHtml(invoice.email_message_id)}</small><small>Accepted by email provider; inbox delivery is not confirmed.</small></details>` : '<small>Not emailed</small>'}
+            ${invoice.email_pending_to ? `<small>Send unconfirmed to ${escapeHtml(invoice.email_pending_to)}. Retry checks the original message.</small>` : ""}
+            ${invoice.email_error ? `<small role="alert">${escapeHtml(invoice.email_error)}</small>` : ""}
+          </td>
           <td><span class="receipt-badge ${documents ? "receipt-present" : "receipt-missing"}">${documents ? `${documents} Word file${documents === 1 ? "" : "s"}` : "Not generated"}</span></td>
           <td class="number"><strong>${money(invoice.total_amount)}</strong><small>${money(paid)} received</small></td>
           <td class="row-actions invoice-actions">
             <button type="button" data-action="generate-invoice" data-id="${invoice.id}">Word</button>
+            ${status !== "void" ? `<button type="button" data-action="email-invoice" data-id="${invoice.id}">${invoice.email_pending_to ? "Retry email" : invoice.emailed_at ? "Email again" : "Email"}</button>` : ""}
             ${status !== "paid" && status !== "void" ? `<button type="button" data-action="mark-invoice-paid" data-id="${invoice.id}">Paid</button>` : ""}
             <button type="button" data-action="edit-invoice" data-id="${invoice.id}">Edit</button>
-            ${paid <= 0 && (status === "pending" || status === "overdue") ? `<button type="button" data-action="delete-invoice" data-id="${invoice.id}">Delete</button>` : ""}
+            ${!invoice.emailed_at && !invoice.email_pending_to && paid <= 0 && (status === "pending" || status === "overdue") ? `<button type="button" data-action="delete-invoice" data-id="${invoice.id}">Delete</button>` : ""}
           </td>
         </tr>`;
       }).join("");
@@ -721,8 +726,8 @@
       return { mode: "download", name: fileName };
     }
 
-    async function generateInvoice(invoice) {
-      const preferredHandle = await folderHandle(invoice.client_id).catch(() => null);
+    async function generateInvoice(invoice, emailOnly = false) {
+      const preferredHandle = emailOnly ? null : await folderHandle(invoice.client_id).catch(() => null);
       toast("Building the Word invoice...", "info");
       const logoArtifact = invoice.include_client_logo ? state.client_artifacts.find((artifact) => artifact.id === invoice.client_logo_artifact_id) : null;
       const [businessLogo, signature, clientLogo] = await Promise.all([
@@ -744,12 +749,47 @@
       });
       const fileName = window.CareerStepsInvoiceDocx.fileNameForInvoice(fullInvoice);
       if (!state.demo) {
-        await uploadArtifact({ type: "invoice", clientId: invoice.client_id, projectId: invoice.project_id || "", invoiceId: invoice.id, displayName: fileName, file: new File([blob], fileName, { type: DOCX_MIME }) });
+        const artifact = await uploadArtifact({ type: "invoice", clientId: invoice.client_id, projectId: invoice.project_id || "", invoiceId: invoice.id, displayName: fileName, file: new File([blob], fileName, { type: DOCX_MIME }) });
+        if (emailOnly) return artifact;
         await loadData();
       }
       const saved = await saveBlobLocally(blob, fileName, invoice.client_id, preferredHandle);
       toast(saved.mode === "folder" ? `Word invoice saved to ${saved.name}.` : "Word invoice downloaded. Choose a client folder next time to save directly.");
       renderRoute();
+    }
+
+    const sendingInvoices = new Set();
+    async function sendInvoice(invoice, button) {
+      if (state.demo) throw new Error("Email is unavailable in demo mode. No email was sent.");
+      if (!invoice || sendingInvoices.has(invoice.id)) return;
+      const recipient = invoice.email_pending_to || state.clients.find((client) => client.id === invoice.client_id)?.email?.trim();
+      if (!recipient || !/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(recipient)) {
+        throw new Error("Add a valid email address to this client's record before sending.");
+      }
+      const prior = invoice.emailed_at ? `Previously emailed to ${invoice.emailed_to} on ${new Date(invoice.emailed_at).toLocaleString()}. Send another copy?\n\n` : "";
+      const retry = invoice.email_pending_to ? "Retry the unconfirmed send using its original recipient and attachment?\n\n" : prior;
+      if (!window.confirm(`${retry}Email invoice ${invoice.invoice_number} to ${recipient}?\nCopy: admin@careersteps.net`)) return;
+      sendingInvoices.add(invoice.id);
+      button.disabled = true;
+      button.textContent = "Sending...";
+      try {
+        const artifact = invoice.email_pending_to ? null : await generateInvoice(invoice, true);
+        const sent = await apiRequest(`/invoices/${encodeURIComponent(invoice.id)}/email`, { method: "POST", body: {
+          artifact_id: artifact?.id, expected_recipient: recipient, invoice_updated_at: invoice.updated_at,
+          previous_message_id: invoice.email_message_id || null,
+        } });
+        Object.assign(invoice, sent, { email_error: null, email_pending_to: null });
+        toast("Invoice emailed successfully, with a copy to admin@careersteps.net.");
+      } catch (error) {
+        invoice.email_error = error.message;
+        throw error;
+      } finally {
+        sendingInvoices.delete(invoice.id);
+        button.disabled = false;
+        button.textContent = "Email";
+        await loadData().catch(() => {});
+        renderRoute();
+      }
     }
 
     async function viewArtifact(artifact) {
@@ -775,6 +815,7 @@
       if (action === "use-invoice-profile") { invoiceForm(null, state.invoice_profiles.find((entry) => entry.id === id)); return true; }
       if (action === "mark-invoice-paid") { paymentForm(state.invoices.find((entry) => entry.id === id)); return true; }
       if (action === "generate-invoice") { await generateInvoice(state.invoices.find((entry) => entry.id === id)); return true; }
+      if (action === "email-invoice") { await sendInvoice(state.invoices.find((entry) => entry.id === id), button); return true; }
       if (action === "delete-invoice") {
         const invoice = state.invoices.find((entry) => entry.id === id);
         if (!invoice) return true;

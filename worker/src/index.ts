@@ -12,6 +12,7 @@ import {
 import { deleteAttachment, downloadAttachment, uploadAttachment } from "./attachments";
 import { deleteClientArtifact, downloadClientArtifact, uploadClientArtifact } from "./artifacts";
 import { invoiceBrandingAsset } from "./invoice-branding";
+import { emailInvoice } from "./invoice-email";
 import {
   createInvoice,
   deleteInvoice,
@@ -115,6 +116,11 @@ async function route(request: Request, env: Env, path: string, url: URL): Promis
     }
   }
 
+  const invoiceEmailMatch = path.match(/^\/invoices\/([^/]+)\/email$/);
+  if (invoiceEmailMatch?.[1] && request.method === "POST") {
+    await requireMutation(request, env);
+    return emailInvoice(request, env, decodedId(invoiceEmailMatch[1]));
+  }
   const invoicePaidMatch = path.match(/^\/invoices\/([^/]+)\/paid$/);
   if (invoicePaidMatch?.[1] && request.method === "POST") {
     await requireMutation(request, env);

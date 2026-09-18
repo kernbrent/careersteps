@@ -377,7 +377,9 @@ export async function bookkeepingData(env: Env): Promise<Response> {
       `SELECT id, owner_id, record_type, expense_id, income_id, file_name, mime_type, size_bytes, created_at
        FROM attachments ORDER BY created_at DESC`,
     ),
-    env.DB.prepare("SELECT * FROM invoices ORDER BY created_date DESC, created_at DESC"),
+    env.DB.prepare(`SELECT invoices.*,
+      (SELECT recipient FROM invoice_email_operations WHERE invoice_id=invoices.id AND status='pending') AS email_pending_to
+      FROM invoices ORDER BY created_date DESC, created_at DESC`),
     env.DB.prepare("SELECT * FROM invoice_items ORDER BY invoice_id, sort_order"),
     env.DB.prepare("SELECT * FROM invoice_profiles WHERE is_active = 1 ORDER BY lower(name)"),
     env.DB.prepare(
