@@ -15,6 +15,7 @@ This Cloudflare Worker serves the private `/admin/` portal and protects the `/ap
 
 ## Invoice workflow
 
+- In **Invoices**, unpaid pending, overdue, and void invoices offer **Delete**, including previously emailed invoices. Confirmation removes the linked unpaid Income entry, generated files, and completed email payload; a deletion audit record remains. Previously delivered emails and local downloaded copies cannot be recalled. Recorded payments and unconfirmed email operations block deletion. Apply migration 0007 before deploying this behavior.
 - Creating an invoice also creates a matching pending Income record. Payments recorded from either workflow update both views.
 - Invoice starting points can retain client, project, contract, billing lines, payment terms, summary source, and logo choices for reuse.
 - Contracts, MOUs, logos, generated invoices, and other client files are stored privately in R2 and cataloged in D1.

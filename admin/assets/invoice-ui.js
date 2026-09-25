@@ -114,7 +114,7 @@
             ${status !== "void" ? `<button type="button" data-action="email-invoice" data-id="${invoice.id}">${invoice.email_pending_to ? "Retry email" : invoice.emailed_at ? "Email again" : "Email"}</button>` : ""}
             ${status !== "paid" && status !== "void" ? `<button type="button" data-action="mark-invoice-paid" data-id="${invoice.id}">Paid</button>` : ""}
             <button type="button" data-action="edit-invoice" data-id="${invoice.id}">Edit</button>
-            ${!invoice.emailed_at && !invoice.email_pending_to && paid <= 0 && (status === "pending" || status === "overdue") ? `<button type="button" data-action="delete-invoice" data-id="${invoice.id}">Delete</button>` : ""}
+            ${!invoice.email_pending_to && paid === 0 && (status === "pending" || status === "overdue" || status === "void") ? `<button type="button" data-action="delete-invoice" data-id="${invoice.id}">Delete</button>` : ""}
           </td>
         </tr>`;
       }).join("");
@@ -821,12 +821,13 @@
         if (!invoice) return true;
         const status = computedStatus(invoice);
         const paid = amountPaid(invoice.income_id);
-        if (paid > 0 || (status !== "pending" && status !== "overdue")) {
-          throw new Error("Only unpaid pending or overdue invoices can be deleted.");
+        if (paid !== 0 || !["pending", "overdue", "void"].includes(status) || invoice.email_pending_to) {
+          throw new Error("Only unpaid invoices without an unconfirmed email can be deleted.");
         }
         const wordFiles = invoiceArtifacts(invoice.id).length;
         const fileMessage = wordFiles ? ` and ${wordFiles} generated Word file${wordFiles === 1 ? "" : "s"}` : "";
-        if (!window.confirm(`Delete invoice ${invoice.invoice_number}? This will also delete its linked unpaid Income entry${fileMessage}. This cannot be undone.`)) return true;
+        const emailMessage = invoice.emailed_at ? " This invoice was already emailed. Deleting it will not recall the email or notify the recipient." : "";
+        if (!window.confirm(`Delete invoice ${invoice.invoice_number}? This will also delete its linked unpaid Income entry${fileMessage}.${emailMessage} A deletion audit record will remain. This cannot be undone.`)) return true;
         if (state.demo) {
           state.client_artifacts = state.client_artifacts.filter((entry) => entry.linked_invoice_id !== invoice.id);
           state.invoice_items = state.invoice_items.filter((entry) => entry.invoice_id !== invoice.id);

@@ -115,5 +115,29 @@ it("runs the authenticated invoice workflow with real D1/R2 and a controlled Res
     expect(calls).toHaveLength(beforeRedirect + 1);
     const deletion = await mf.dispatchFetch(`https://admin-api.careersteps.net/api/admin/invoices/${invoice.id}`, {method: "DELETE", headers});
     expect(deletion.status).toBe(409);
+    // Confirmed email history must not prevent removing an unpaid void mistake.
+    await db.prepare("UPDATE invoice_email_operations SET status='sent' WHERE invoice_id=?1").bind(invoice.id).run();
+    await db.prepare("UPDATE invoices SET status='void' WHERE id=?1").bind(invoice.id).run();
+    const row = await db.prepare("SELECT income_id FROM invoices WHERE id=?1").bind(invoice.id).first<{ income_id: string }>();
+    const operation = await db.prepare("SELECT payload_path FROM invoice_email_operations WHERE invoice_id=?1").bind(invoice.id).first<{ payload_path: string }>();
+    const storedArtifact = await db.prepare("SELECT storage_path FROM client_artifacts WHERE id=?1").bind(artifact.id).first<{ storage_path: string }>();
+    // Even void invoices remain protected if there is a recorded payment.
+    await db.prepare("INSERT INTO income_payments(id,income_id,payment_date,amount,created_at,updated_at) VALUES ('guard-payment',?1,'2026-09-17',0.01,?2,?2)").bind(row!.income_id, stamp).run();
+    expect((await mf.dispatchFetch(`https://admin-api.careersteps.net/api/admin/invoices/${invoice.id}`, {method: "DELETE", headers})).status).toBe(409);
+    await expect(db.prepare("DELETE FROM invoices WHERE id=?1").bind(invoice.id).run()).rejects.toThrow();
+    await db.prepare("DELETE FROM income_payments WHERE id='guard-payment'").run();
+    const removed = await mf.dispatchFetch(`https://admin-api.careersteps.net/api/admin/invoices/${invoice.id}`, {method: "DELETE", headers});
+    expect(removed.status, await removed.clone().text()).toBe(200);
+    for (const table of ["invoices", "invoice_items", "invoice_email_operations"]) {
+      const key = table === "invoices" ? "id" : "invoice_id";
+      expect(await db.prepare(`SELECT * FROM ${table} WHERE ${key}=?1`).bind(invoice.id).first()).toBeNull();
+    }
+    expect(await db.prepare("SELECT id FROM income WHERE id=?1").bind(row!.income_id).first()).toBeNull();
+    expect(await db.prepare("SELECT id FROM client_artifacts WHERE id=?1").bind(artifact.id).first()).toBeNull();
+    const bucket = await mf.getR2Bucket("ATTACHMENTS");
+    expect(await bucket.head(operation!.payload_path)).toBeNull();
+    expect(await bucket.head(storedArtifact!.storage_path)).toBeNull();
+    const audit = await db.prepare("SELECT metadata_json FROM audit_events WHERE entity_id=?1 AND event_type='deleted'").bind(invoice.id).first<{metadata_json:string}>();
+    expect(JSON.parse(audit!.metadata_json)).toMatchObject({invoice_number: "TEST-DO-NOT-PAY", status: "void", email_message_id: "message-5"});
   } finally { await mf.dispose(); }
 }, 60000);

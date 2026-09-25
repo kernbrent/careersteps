@@ -53,6 +53,9 @@ type ExistingInvoice = {
 
 type InvoiceDeletionRow = ExistingInvoice & {
   invoice_number: string;
+  emailed_at: string | null;
+  emailed_to: string | null;
+  email_message_id: string | null;
 };
 
 type StoragePathRow = {
@@ -118,7 +121,7 @@ function moneyRound(value: number): number {
 }
 
 export function invoiceCanBeDeleted(status: string, paidAmount: number): boolean {
-  return (status === "pending" || status === "overdue") && paidAmount <= 0;
+  return (status === "pending" || status === "overdue" || status === "void") && paidAmount === 0;
 }
 
 function normalizeItem(value: unknown, index: number): InvoiceItemInput {
@@ -245,6 +248,9 @@ async function validateRelationships(env: Env, payload: InvoiceInput): Promise<C
 
 function databaseError(error: unknown): never {
   const message = error instanceof Error ? error.message : String(error);
+  if (/Invoices with payments must be retained/i.test(message)) {
+    throw new AdminError(409, "INVOICE_NOT_DELETABLE", "This invoice has a payment or its status changed. Refresh the invoice list before trying again.");
+  }
   if (/UNIQUE constraint failed/i.test(message)) {
     throw new AdminError(409, "DUPLICATE_INVOICE", "That invoice number or saved starting-point name is already in use.");
   }
@@ -488,10 +494,11 @@ export async function markInvoicePaid(request: Request, env: Env, invoiceId: str
 }
 
 export async function deleteInvoice(env: Env, invoiceId: string): Promise<Response> {
-  const emailOperation = await env.DB.prepare("SELECT id FROM invoice_email_operations WHERE invoice_id=?1 UNION ALL SELECT id FROM invoices WHERE id=?1 AND email_message_id IS NOT NULL").bind(invoiceId).first();
-  if (emailOperation) throw new AdminError(409, "INVOICE_EMAIL_RETAINED", "An emailed invoice or unconfirmed email must be retained for the billing record.");
+  const emailOperation = await env.DB.prepare("SELECT status, payload_path FROM invoice_email_operations WHERE invoice_id=?1").bind(invoiceId).first<{ status: string; payload_path: string }>();
+  if (emailOperation?.status === "pending") throw new AdminError(409, "INVOICE_EMAIL_RETAINED", "Resolve the unconfirmed invoice email before deleting this invoice.");
   const existing = await env.DB.prepare(
     `SELECT invoices.id, invoices.income_id, invoices.invoice_number, invoices.status,
+       invoices.emailed_at, invoices.emailed_to, invoices.email_message_id,
        COALESCE((SELECT SUM(amount) FROM income_payments WHERE income_id = invoices.income_id), 0) AS paid_amount
      FROM invoices WHERE invoices.id = ?1`,
   ).bind(invoiceId).first<InvoiceDeletionRow>();
@@ -500,7 +507,7 @@ export async function deleteInvoice(env: Env, invoiceId: string): Promise<Respon
     throw new AdminError(
       409,
       "INVOICE_NOT_DELETABLE",
-      "Only unpaid pending or overdue invoices can be deleted. Paid, partially paid, and void invoices must be retained.",
+      "Only unpaid pending, overdue, or void invoices can be deleted. Invoices with payments must be retained.",
     );
   }
 
@@ -515,6 +522,7 @@ export async function deleteInvoice(env: Env, invoiceId: string): Promise<Respon
   const now = new Date().toISOString();
   try {
     await env.DB.batch([
+      env.DB.prepare("DELETE FROM invoice_email_operations WHERE invoice_id = ?1 AND status = 'sent'").bind(invoiceId),
       env.DB.prepare("DELETE FROM client_artifacts WHERE linked_invoice_id = ?1").bind(invoiceId),
       env.DB.prepare("DELETE FROM invoices WHERE id = ?1").bind(invoiceId),
       env.DB.prepare("DELETE FROM income WHERE id = ?1").bind(existing.income_id),
@@ -523,7 +531,7 @@ export async function deleteInvoice(env: Env, invoiceId: string): Promise<Respon
       ).bind(
         crypto.randomUUID(),
         invoiceId,
-        JSON.stringify({ invoice_number: existing.invoice_number, income_id: existing.income_id }),
+        JSON.stringify({ invoice_number: existing.invoice_number, income_id: existing.income_id, status: existing.status, emailed_at: existing.emailed_at, emailed_to: existing.emailed_to, email_message_id: existing.email_message_id }),
         now,
       ),
     ]);
@@ -532,6 +540,7 @@ export async function deleteInvoice(env: Env, invoiceId: string): Promise<Respon
   }
 
   const storagePaths = [...new Set([
+    ...(emailOperation?.payload_path ? [emailOperation.payload_path] : []),
     ...invoiceArtifacts.results.map((item) => item.storage_path),
     ...incomeAttachments.results.map((item) => item.storage_path),
   ])];

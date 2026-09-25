@@ -123,12 +123,13 @@ describe("invoice validation", () => {
     })).toThrow(/payment_date/i);
   });
 
-  it("allows deletion only for unpaid pending or overdue invoices", () => {
+  it("allows deletion of unpaid mistakes including void invoices but protects payments", () => {
     expect(invoiceCanBeDeleted("pending", 0)).toBe(true);
     expect(invoiceCanBeDeleted("overdue", 0)).toBe(true);
     expect(invoiceCanBeDeleted("pending", 1)).toBe(false);
     expect(invoiceCanBeDeleted("partial", 100)).toBe(false);
     expect(invoiceCanBeDeleted("paid", 600)).toBe(false);
-    expect(invoiceCanBeDeleted("void", 0)).toBe(false);
+    expect(invoiceCanBeDeleted("void", 0)).toBe(true);
+    expect(invoiceCanBeDeleted("void", 1)).toBe(false);
   });
 });
