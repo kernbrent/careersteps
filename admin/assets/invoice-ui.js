@@ -15,7 +15,7 @@
     const {
       state, $, $$, apiRequest, loadData, renderRoute, dialogFrame, toast, escapeHtml, money,
       shortDate, statusBadge, clientName, projectName, optionList, clean, num, uid, today, taxYear,
-      amountPaid,
+      amountPaid, detailFields, paymentDetails,
     } = context;
 
     const itemRows = (invoiceId) => state.invoice_items
@@ -110,6 +110,7 @@
           <td><span class="receipt-badge ${documents ? "receipt-present" : "receipt-missing"}">${documents ? `${documents} Word file${documents === 1 ? "" : "s"}` : "Not generated"}</span></td>
           <td class="number"><strong>${money(invoice.total_amount)}</strong><small>${money(paid)} received</small></td>
           <td class="row-actions invoice-actions">
+            <button type="button" data-action="view-invoice" data-id="${invoice.id}">View</button>
             <button type="button" data-action="generate-invoice" data-id="${invoice.id}">Word</button>
             ${status !== "void" ? `<button type="button" data-action="email-invoice" data-id="${invoice.id}">${invoice.email_pending_to ? "Retry email" : invoice.emailed_at ? "Email again" : "Email"}</button>` : ""}
             ${status !== "paid" && status !== "void" ? `<button type="button" data-action="mark-invoice-paid" data-id="${invoice.id}">Paid</button>` : ""}
@@ -170,6 +171,25 @@
 
     function artifactSelectOptions(clientId, selected, types, emptyLabel) {
       return optionList(clientArtifacts(clientId, types), selected, emptyLabel, (artifact) => artifact.display_name);
+    }
+
+    function viewInvoice(invoice) {
+      if (!invoice) return;
+      const paid = amountPaid(invoice.income_id);
+      const fields = [["Invoice number", invoice.invoice_number], ["Created", shortDate(invoice.created_date)],
+        ["Client", clientName(invoice.client_id)], ["Project", projectName(invoice.project_id)], ["Contract", invoice.contract_name],
+        ["Period", `${shortDate(invoice.period_start)} - ${shortDate(invoice.period_end)}`], ["Due date", invoice.due_date ? shortDate(invoice.due_date) : ""],
+        ["Purchase order", invoice.purchase_order], ["Status", computedStatus(invoice)], ["Total", money(invoice.total_amount)], ["Received", money(paid)],
+        ["Outstanding", money(Math.max(0, num(invoice.total_amount) - paid))], ["Summary", invoice.summary], ["Payment terms", invoice.payment_terms],
+        ["Payment instructions", invoice.payment_instructions], ["Notes", invoice.notes], ["Emailed to", invoice.emailed_to],
+        ["Emailed at", invoice.emailed_at ? new Date(invoice.emailed_at).toLocaleString() : ""], ["Email error", invoice.email_error]];
+      const files = invoiceArtifacts(invoice.id);
+      dialogFrame(`View ${invoice.invoice_number}`, "Read-only invoice details", `<div class="record-form">
+        <section class="form-section">${detailFields(fields)}</section>
+        <section class="form-section"><h3>Line items</h3><div class="table-wrap"><table class="data-table"><thead><tr><th>Service / description</th><th>Billing / cadence</th><th>Quantity</th><th>Rate</th><th>Total</th></tr></thead><tbody>${itemRows(invoice.id).map(item => `<tr><td>${escapeHtml(item.work_type)}<small>${escapeHtml(item.description || "")}</small></td><td>${escapeHtml(item.billing_type)} / ${escapeHtml(item.cadence)}</td><td>${num(item.quantity)}</td><td>${money(item.unit_rate)}</td><td>${money(item.line_total)}</td></tr>`).join("")}</tbody></table></div></section>
+        <section class="form-section"><h3>Payment history</h3>${paymentDetails(invoice.income_id)}</section>
+        <section class="form-section"><h3>Saved documents</h3>${files.length ? `<ul class="attachment-list">${files.map(file => `<li><button type="button" class="attachment-open" data-action="view-client-artifact" data-id="${file.id}">${escapeHtml(file.file_name || file.title || "Invoice document")}</button></li>`).join("")}</ul>` : '<p class="muted-copy">No documents generated yet.</p>'}</section>
+        <div class="form-footer"><button type="button" class="button" data-action="close-dialog">Close</button></div></div>`, "dialog-wide");
     }
 
     function invoiceForm(item = null, selectedProfile = null) {
@@ -810,6 +830,7 @@
     async function handleAction(button) {
       const action = button.dataset.action;
       const id = button.dataset.id;
+      if (action === "view-invoice") { viewInvoice(state.invoices.find((entry) => entry.id === id)); return true; }
       if (action === "add-invoice") { invoiceForm(); return true; }
       if (action === "edit-invoice") { invoiceForm(state.invoices.find((entry) => entry.id === id)); return true; }
       if (action === "use-invoice-profile") { invoiceForm(null, state.invoice_profiles.find((entry) => entry.id === id)); return true; }

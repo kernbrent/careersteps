@@ -395,7 +395,7 @@
       invoicePortal = window.createCareerStepsInvoicePortal({
         state, $, $$, API_BASE, apiRequest, loadData, renderRoute, dialogFrame, toast, escapeHtml,
         money, shortDate, statusBadge, clientName, projectName, optionList, clean, num, uid, today,
-        taxYear, amountPaid, pageToolbar, emptyState, methodOptions,
+        taxYear, amountPaid, pageToolbar, emptyState, methodOptions, detailFields, paymentDetails,
       });
       if (state.demo) invoicePortal.seedDemoData();
     }
@@ -599,7 +599,7 @@
         <td>${receiptBadge("expense", item.id)}</td>
         <td>${statusBadge(item.record_status)}${item.cpa_review ? '<span class="mini-flag">CPA</span>' : ""}</td>
         <td class="number"><strong>${money(item.amount)}</strong><small>${num(item.deductibility_percent)}% deductible</small></td>
-        <td class="row-actions"><button type="button" data-action="edit-expense" data-id="${item.id}">Edit</button><button type="button" data-action="delete-expense" data-id="${item.id}">Delete</button></td>
+        <td class="row-actions"><button type="button" data-action="view-expense" data-id="${item.id}">View</button><button type="button" data-action="edit-expense" data-id="${item.id}">Edit</button><button type="button" data-action="delete-expense" data-id="${item.id}">Delete</button></td>
       </tr>`;
     }).join("");
     return `
@@ -639,7 +639,7 @@
         <td>${receiptBadge("income", item.id)}</td>
         <td>${statusBadge(status)}${item.cpa_review ? '<span class="mini-flag">CPA</span>' : ""}</td>
         <td class="number"><strong>${money(item.amount)}</strong><small>${money(paid)} received</small></td>
-        <td class="row-actions"><button type="button" data-action="record-payment" data-id="${item.id}">Payment</button>${linkedInvoice ? `<button type="button" data-action="edit-invoice" data-id="${linkedInvoice.id}">Invoice</button>` : `<button type="button" data-action="edit-income" data-id="${item.id}">Edit</button><button type="button" data-action="delete-income" data-id="${item.id}">Delete</button>`}</td>
+        <td class="row-actions"><button type="button" data-action="view-income" data-id="${item.id}">View</button><button type="button" data-action="record-payment" data-id="${item.id}">Payment</button>${linkedInvoice ? `<button type="button" data-action="edit-invoice" data-id="${linkedInvoice.id}">Invoice</button>` : `<button type="button" data-action="edit-income" data-id="${item.id}">Edit</button><button type="button" data-action="delete-income" data-id="${item.id}">Delete</button>`}</td>
       </tr>`;
     }).join("");
     return `
@@ -1441,15 +1441,47 @@
     ).join("");
   }
 
-  function attachmentEditor(type, id) {
+  function attachmentEditor(type, id, readOnly = false) {
     if (!id) return "";
     const items = attachmentsFor(type, id);
     if (!items.length) return '<p class="muted-copy">No files attached yet.</p>';
     return `<ul class="attachment-list">${items.map((item) => `
       <li><button type="button" class="attachment-open" data-action="view-attachment" data-id="${item.id}">${escapeHtml(item.file_name)}</button>
       <span>${item.size_bytes ? `${Math.max(1, Math.round(item.size_bytes / 1024))} KB` : ""}</span>
-      <button type="button" class="attachment-remove" data-action="remove-attachment" data-id="${item.id}">Remove</button></li>`
+      ${readOnly ? "" : `<button type="button" class="attachment-remove" data-action="remove-attachment" data-id="${item.id}">Remove</button>`}</li>`
     ).join("")}</ul>`;
+  }
+
+  function detailFields(fields) {
+    return `<dl class="record-details">${fields.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value === null || value === undefined || value === "" ? "Not recorded" : String(value))}</dd></div>`).join("")}</dl>`;
+  }
+
+  function paymentDetails(id) {
+    const payments = paymentsFor(id);
+    return payments.length ? `<ul class="payment-history">${payments.map(payment => `<li><span><strong>${shortDate(payment.payment_date)} - ${money(payment.amount)}</strong><small>${escapeHtml(payment.payment_method || "Method not recorded")} ${escapeHtml(payment.reference_number || "")}</small><small>${escapeHtml(payment.notes || "")}</small></span></li>`).join("")}</ul>` : '<p class="muted-copy">No payments have been recorded.</p>';
+  }
+
+  function viewRecord(type, item) {
+    if (!item) return;
+    const expense = type === "expense";
+    const fields = expense ? [
+      ["Date", shortDate(item.expense_date)], ["Vendor", item.vendor], ["Amount", money(item.amount)],
+      ["Category", categoryName(item.category_id)], ["Description", item.description], ["Business purpose", item.business_purpose],
+      ["Deductibility", `${num(item.deductibility_percent)}%`], ["Reimbursable", item.reimbursable ? "Yes" : "No"], ["Reimbursed", item.reimbursed ? "Yes" : "No"],
+    ] : [
+      ["Income date", shortDate(item.income_date)], ["Payer", item.payer_name], ["Amount", money(item.amount)],
+      ["Received", money(amountPaid(item.id))], ["Outstanding", money(Math.max(0, num(item.amount) - amountPaid(item.id)))],
+      ["Payment status", incomeComputedStatus(item)], ["Invoice number", item.invoice_number], ["Invoice date", item.invoice_date ? shortDate(item.invoice_date) : ""],
+      ["Due date", item.due_date ? shortDate(item.due_date) : ""], ["Description", item.description],
+    ];
+    fields.push(["Client", clientName(item.client_id)], ["Project", projectName(item.project_id)], ["Payment method", item.payment_method],
+      ["Tax year", item.tax_year], ["Record status", item.record_status], ["CPA review", item.cpa_review ? "Yes" : "No"], ["CPA notes", item.cpa_notes], ["Internal notes", item.notes]);
+    const invoice = !expense && invoicePortal?.invoiceForIncome(item.id);
+    dialogFrame(expense ? "View expense" : "View income", "Read-only details", `<div class="record-form">
+      <section class="form-section">${detailFields(fields)}</section>
+      ${expense ? "" : `<section class="form-section"><h3>Payment history</h3>${paymentDetails(item.id)}</section>`}
+      <section class="form-section"><h3>Attachments</h3>${attachmentEditor(type, item.id, true)}</section>
+      ${auditLine(item)}<div class="form-footer">${invoice ? `<button type="button" class="secondary-button" data-action="view-invoice" data-id="${invoice.id}">View invoice</button>` : ""}<button type="button" class="button" data-action="close-dialog">Close</button></div></div>`, "dialog-wide");
   }
 
   function auditLine(item) {
@@ -1938,12 +1970,12 @@
     const match = (values) => !normalized || values.join(" ").toLowerCase().includes(normalized);
     state.expenses.forEach((item) => {
       if (match([item.vendor, item.description, item.business_purpose, categoryName(item.category_id), clientName(item.client_id), item.amount])) {
-        results.push({ type: "Expense", date: item.expense_date, title: item.vendor, detail: `${categoryName(item.category_id)} - ${money(item.amount)}`, action: "edit-expense", id: item.id });
+        results.push({ type: "Expense", date: item.expense_date, title: item.vendor, detail: `${categoryName(item.category_id)} - ${money(item.amount)}`, action: "view-expense", id: item.id });
       }
     });
     state.income.forEach((item) => {
       if (match([item.payer_name, item.invoice_number, item.description, clientName(item.client_id), item.amount])) {
-        results.push({ type: "Income", date: item.income_date, title: item.payer_name, detail: `${item.invoice_number || "No invoice"} - ${money(item.amount)}`, action: "edit-income", id: item.id });
+        results.push({ type: "Income", date: item.income_date, title: item.payer_name, detail: `${item.invoice_number || "No invoice"} - ${money(item.amount)}`, action: "view-income", id: item.id });
       }
     });
     state.mileage_entries.forEach((item) => {
@@ -2541,6 +2573,8 @@
       if ($("#search-dialog").open) $("#search-dialog").close();
     };
     switch (action) {
+      case "view-expense": closeSearchForRecord(); viewRecord("expense", byId(state.expenses, id)); break;
+      case "view-income": closeSearchForRecord(); viewRecord("income", byId(state.income, id)); break;
       case "add-expense": expenseForm(); break;
       case "edit-expense": closeSearchForRecord(); expenseForm(byId(state.expenses, id)); break;
       case "delete-expense": await deleteRecord("expense", id); break;
