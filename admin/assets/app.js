@@ -149,6 +149,15 @@
     deduction: items.reduce((sum, item) => sum + mileageDeductionFor(item), 0),
     missingRateCount: items.filter((item) => !mileageRateForDate(item.mileage_date)).length,
   });
+  const deductibleTolls = (expenses) => expenses
+    .filter((item) => /toll/i.test(categoryName(item.category_id)))
+    .reduce((sum, item) => sum + num(item.amount) * num(item.deductibility_percent) / 100, 0);
+  const estimatedNetAfterMileage = (income, expenses, mileage) =>
+    mileage.missingRateCount ? null : income - expenses - mileage.deduction;
+  const estimatedNetLabel = (income, expenses, mileage) => {
+    const total = estimatedNetAfterMileage(income, expenses, mileage);
+    return total === null ? "Unavailable: mileage rate missing" : money(total);
+  };
   const rateDisplay = (value) =>
     `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 3 }).format(num(value) * 100)}¢/mi`;
 
@@ -523,9 +532,7 @@
       0
     );
     const mileageSummary = mileageTotals(mileage);
-    const tollTotal = expenses
-      .filter((item) => /toll/i.test(categoryName(item.category_id)))
-      .reduce((sum, item) => sum + num(item.amount), 0);
+    const tollTotal = deductibleTolls(expenses);
     const missingReceipts = expenses.filter(
       (item) => !attachmentsFor("expense", item.id).length
     ).length;
@@ -566,9 +573,9 @@
         </div>
         <div class="metric-grid">
           <article class="metric-card metric-income"><span>Income received</span><strong>${money(incomeTotal)}</strong><small>Year to date</small></article>
-          <article class="metric-card metric-expense"><span>Included expenses</span><strong>${money(expenseTotal)}</strong><small>After deductibility %</small></article>
-          <article class="metric-card metric-net"><span>Net business income</span><strong>${money(incomeTotal - expenseTotal)}</strong><small>Before mileage deduction</small></article>
-          <article class="metric-card metric-mileage"><span>Mileage &amp; tolls</span><strong>${mileageSummary.miles.toFixed(1)} mi</strong><small>${money(mileageSummary.deduction)} estimated deduction · ${money(tollTotal)} tolls${mileageSummary.missingRateCount ? ` · ${mileageSummary.missingRateCount} ${mileageSummary.missingRateCount === 1 ? "trip" : "trips"} missing a rate` : ""}</small></article>
+          <article class="metric-card metric-expense"><span>Included expenses</span><strong>${money(expenseTotal)}</strong><small>After deductibility % · Includes ${money(tollTotal)} in tolls</small></article>
+          <article class="metric-card metric-net"><span>Net before mileage deduction</span><strong>${money(incomeTotal - expenseTotal)}</strong><small>Estimated net after mileage deduction: ${estimatedNetLabel(incomeTotal, expenseTotal, mileageSummary)}</small></article>
+          <article class="metric-card metric-mileage"><span>Business mileage</span><strong>${mileageSummary.miles.toFixed(1)} mi</strong><small>${money(mileageSummary.deduction)} estimated deduction${mileageSummary.missingRateCount ? ` · ${mileageSummary.missingRateCount} ${mileageSummary.missingRateCount === 1 ? "trip" : "trips"} missing a rate` : ""}</small></article>
         </div>
         <div class="dashboard-grid">
           <section class="panel panel-wide">
@@ -945,9 +952,10 @@
     return `
       <div class="report-metrics">
         <article><span>Income received</span><strong>${money(incomeTotal)}</strong></article>
-        <article><span>Deductible expenses</span><strong>${money(expenseTotal)}</strong></article>
-        <article><span>Net</span><strong>${money(incomeTotal - expenseTotal)}</strong></article>
-        <article><span>Mileage & tolls</span><strong>${mileageSummary.miles.toFixed(1)} mi</strong><small>${money(mileageSummary.deduction)} deduction · ${money(data.expenses.filter((item) => /toll/i.test(categoryName(item.category_id))).reduce((sum, item) => sum + num(item.amount), 0))} tolls${mileageSummary.missingRateCount ? ` · ${mileageSummary.missingRateCount} missing rate` : ""}</small></article>
+        <article><span>Deductible expenses</span><strong>${money(expenseTotal)}</strong><small>Includes ${money(deductibleTolls(data.expenses))} in tolls</small></article>
+        <article><span>Net before mileage deduction</span><strong>${money(incomeTotal - expenseTotal)}</strong></article>
+        <article><span>Estimated net after mileage deduction</span><strong>${estimatedNetLabel(incomeTotal, expenseTotal, mileageSummary)}</strong></article>
+        <article><span>Business mileage</span><strong>${mileageSummary.miles.toFixed(1)} mi</strong><small>${money(mileageSummary.deduction)} deduction${mileageSummary.missingRateCount ? ` · ${mileageSummary.missingRateCount} missing rate` : ""}</small></article>
         <article><span>Missing receipts</span><strong>${missing}</strong></article>
       </div>
       <div class="report-summary-grid">
@@ -1204,7 +1212,9 @@
       { Metric: "Date range", Value: `${state.reportFilters.date_from || "All"} through ${state.reportFilters.date_to || "All"}` },
       { Metric: "Income received", Value: incomeTotal },
       { Metric: "Deductible expenses", Value: expenseTotal },
-      { Metric: "Net business income", Value: incomeTotal - expenseTotal },
+      { Metric: "Tolls (already included in deductible expenses)", Value: deductibleTolls(data.expenses) },
+      { Metric: "Net before mileage deduction", Value: incomeTotal - expenseTotal },
+      { Metric: "Estimated net after mileage deduction", Value: estimatedNetAfterMileage(incomeTotal, expenseTotal, mileageSummary) ?? "Unavailable: mileage rate missing" },
       { Metric: "Business miles", Value: mileageSummary.miles },
       { Metric: "Mileage rates applied", Value: ratesApplied },
       { Metric: "Estimated mileage deduction", Value: mileageSummary.deduction },
@@ -1275,17 +1285,19 @@
     const autoTable = documentPdf.autoTable?.bind(documentPdf);
     if (!autoTable) {
       documentPdf.text(`Income received: ${money(incomeTotal)}`, left, 85);
-      documentPdf.text(`Deductible expenses: ${money(expenseTotal)}`, left, 101);
+      documentPdf.text(`Deductible expenses: ${money(expenseTotal)} (includes ${money(deductibleTolls(data.expenses))} in tolls)`, left, 101);
       documentPdf.text(`Business mileage: ${mileageSummary.miles.toFixed(1)} miles`, left, 117);
       documentPdf.text(`Estimated mileage deduction: ${money(mileageSummary.deduction)}`, left, 133);
+      documentPdf.text(`Net before mileage deduction: ${money(incomeTotal - expenseTotal)}`, left, 149);
+      documentPdf.text(`Estimated net after mileage deduction: ${estimatedNetLabel(incomeTotal, expenseTotal, mileageSummary)}`, left, 165);
       if (mileageSummary.missingRateCount) {
-        documentPdf.text(`Mileage entries missing a rate: ${mileageSummary.missingRateCount}`, left, 149);
+        documentPdf.text(`Mileage entries missing a rate: ${mileageSummary.missingRateCount}`, left, 181);
       }
     } else {
       autoTable({
         startY: 72,
-        head: [["Income received", "Deductible expenses", "Net", "Business miles", "Mileage deduction", "Missing rate", "CPA review items"]],
-        body: [[money(incomeTotal), money(expenseTotal), money(incomeTotal - expenseTotal), mileageSummary.miles.toFixed(1), money(mileageSummary.deduction), mileageSummary.missingRateCount, cpaRows.length]],
+        head: [["Income received", "Deductible expenses (includes tolls)", "Net before mileage deduction", "Estimated net after mileage deduction", "Business miles", "Mileage deduction", "Missing rate", "CPA review items"]],
+        body: [[money(incomeTotal), `${money(expenseTotal)} (tolls: ${money(deductibleTolls(data.expenses))})`, money(incomeTotal - expenseTotal), estimatedNetLabel(incomeTotal, expenseTotal, mileageSummary), mileageSummary.miles.toFixed(1), money(mileageSummary.deduction), mileageSummary.missingRateCount, cpaRows.length]],
         theme: "grid",
         headStyles: { fillColor: [13, 75, 115] },
       });
