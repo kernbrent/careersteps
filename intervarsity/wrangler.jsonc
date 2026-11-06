@@ -1,0 +1,16 @@
+{
+  "$schema": "../worker/node_modules/wrangler/config-schema.json",
+  "name": "careersteps-intervarsity",
+  "account_id": "dd6360191de72c9a8f0b45e1676cec65",
+  "compatibility_date": "2026-11-06",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    { "pattern": "intervarsity.careersteps.net", "custom_domain": true }
+  ],
+  "assets": {
+    "directory": "./dist",
+    "html_handling": "none",
+    "not_found_handling": "none"
+  }
+}
