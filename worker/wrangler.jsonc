@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "careersteps-admin-api",
+  "account_id": "dd6360191de72c9a8f0b45e1676cec65",
   "main": "src/index.ts",
   "compatibility_date": "2026-09-01",
   "compatibility_flags": [
