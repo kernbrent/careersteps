@@ -41,7 +41,7 @@ The `check` task synchronizes the canonical `admin/` frontend into the ignored `
 - Worker: `careersteps-admin-api`
 - D1 database: `careersteps-admin`
 - Private R2 bucket: `careersteps-attachments-production`
-- Custom domain: `admin-api.careersteps.net` (the portal frontend remains at `careersteps.net/admin/`)
+- Frontend: `careersteps.net/admin/`, using same-origin `/api/admin` Worker routes. The legacy `admin-api.careersteps.net` custom domain remains configured.
 
 Required encrypted Worker secrets:
 

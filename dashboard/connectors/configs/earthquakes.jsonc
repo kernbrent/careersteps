@@ -1,0 +1,32 @@
+{
+  "name": "dashboard-connect-earthquakes",
+  "main": "../worker.mjs",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "ntxearthquakes.com/dashboard-connect*",
+      "zone_name": "ntxearthquakes.com"
+    },
+    {
+      "pattern": "ntxearthquakes.com/api/dashboard-connect/*",
+      "zone_name": "ntxearthquakes.com"
+    }
+  ],
+  "vars": {
+    "SITE_ID": "earthquakes",
+    "SITE_ORIGIN": "https://ntxearthquakes.com",
+    "DASHBOARD_ORIGIN": "https://dashboard.careersteps.net",
+    "AUTH_KIND": "standard",
+    "AUTH_NEXT": "/admin/",
+    "AUTH_LOGIN_PATH": "/api/site-admin/login"
+  },
+  "account_id": "dd6360191de72c9a8f0b45e1676cec65",
+  "services": [
+    {
+      "binding": "AUTH_BACKEND",
+      "service": "ntx-earthquakes-admin"
+    }
+  ]
+}

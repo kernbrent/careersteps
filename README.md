@@ -16,7 +16,7 @@ Open the repository folder in Visual Studio Code, then open `index.html` with Li
 
 ## Admin portal
 
-The `/admin/` frontend remains on the existing GitHub Pages deployment. It connects to the `careersteps-admin-api` Worker at `admin-api.careersteps.net`, which is a dedicated same-site Cloudflare custom domain.
+The `/admin/` frontend remains on the existing GitHub Pages deployment. It connects to the `careersteps-admin-api` Worker through same-origin `/api/admin` routes. The older `admin-api.careersteps.net` custom domain remains available, but the frontend uses its own hostname so host-only sessions also work with the new dashboard sign-in adapter. Existing users with an API-host-only session will sign in once on the website origin after release.
 
 Bookkeeping records and attachments are never stored in this repository or browser storage. The private portal uses:
 
@@ -27,3 +27,7 @@ Bookkeeping records and attachments are never stored in this repository or brows
 - authenticated, server-validated API endpoints for every read and change.
 
 See [worker/README.md](worker/README.md) for validation, migration, deployment, and backup operations.
+
+## Website dashboard
+
+`dashboard/` contains the independent private website dashboard intended for `dashboard.careersteps.net`, its encrypted vault, isolated test configuration, and optional per-site one-click sign-in adapters. See [dashboard/README.md](dashboard/README.md) for local preview, tests, access behavior, and the release procedure. No dashboard resources have been deployed by adding this source.

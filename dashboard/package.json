@@ -1,0 +1,12 @@
+{
+  "name": "careersteps-website-dashboard",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "check": "node tools/check.mjs",
+    "setup:local": "node tools/setup-local.mjs",
+    "dev": "node ../worker/node_modules/wrangler/bin/wrangler.js dev --local --port 8798 --local-upstream localhost:8798",
+    "deploy:dry": "node ../worker/node_modules/wrangler/bin/wrangler.js deploy --dry-run"
+  }
+}

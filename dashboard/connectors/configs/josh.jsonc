@@ -1,0 +1,25 @@
+{
+  "name": "dashboard-connect-josh",
+  "main": "../worker.mjs",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "joshbeyondborders.org/dashboard-connect*",
+      "zone_name": "joshbeyondborders.org"
+    },
+    {
+      "pattern": "joshbeyondborders.org/api/dashboard-connect/*",
+      "zone_name": "joshbeyondborders.org"
+    }
+  ],
+  "vars": {
+    "SITE_ID": "josh",
+    "SITE_ORIGIN": "https://joshbeyondborders.org",
+    "DASHBOARD_ORIGIN": "https://dashboard.careersteps.net",
+    "AUTH_KIND": "workbook",
+    "AUTH_NEXT": "/admin/"
+  },
+  "account_id": "dd6360191de72c9a8f0b45e1676cec65"
+}

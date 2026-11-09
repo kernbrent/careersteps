@@ -1,0 +1,32 @@
+{
+  "name": "dashboard-connect-careersteps",
+  "main": "../worker.mjs",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "careersteps.net/dashboard-connect*",
+      "zone_name": "careersteps.net"
+    },
+    {
+      "pattern": "careersteps.net/api/dashboard-connect/*",
+      "zone_name": "careersteps.net"
+    }
+  ],
+  "vars": {
+    "SITE_ID": "careersteps",
+    "SITE_ORIGIN": "https://careersteps.net",
+    "DASHBOARD_ORIGIN": "https://dashboard.careersteps.net",
+    "AUTH_KIND": "standard",
+    "AUTH_NEXT": "/admin/",
+    "AUTH_LOGIN_PATH": "/api/admin/login"
+  },
+  "account_id": "dd6360191de72c9a8f0b45e1676cec65",
+  "services": [
+    {
+      "binding": "AUTH_BACKEND",
+      "service": "careersteps-admin-api"
+    }
+  ]
+}

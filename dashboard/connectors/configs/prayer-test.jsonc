@@ -1,0 +1,32 @@
+{
+  "name": "dashboard-connect-prayer-test",
+  "main": "../worker.mjs",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "prayer-test.hopesojourns.com/dashboard-connect*",
+      "zone_name": "hopesojourns.com"
+    },
+    {
+      "pattern": "prayer-test.hopesojourns.com/api/dashboard-connect/*",
+      "zone_name": "hopesojourns.com"
+    }
+  ],
+  "vars": {
+    "SITE_ID": "prayer",
+    "SITE_ORIGIN": "https://prayer-test.hopesojourns.com",
+    "DASHBOARD_ORIGIN": "https://dashboard-test.careersteps.net",
+    "AUTH_KIND": "prayer",
+    "AUTH_NEXT": "/",
+    "AUTH_LOGIN_PATH": "/api/login"
+  },
+  "account_id": "dd6360191de72c9a8f0b45e1676cec65",
+  "services": [
+    {
+      "binding": "AUTH_BACKEND",
+      "service": "hope-sojourns-prayer-test"
+    }
+  ]
+}

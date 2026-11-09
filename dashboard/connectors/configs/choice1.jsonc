@@ -1,0 +1,32 @@
+{
+  "name": "dashboard-connect-choice1",
+  "main": "../worker.mjs",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "choice1recruiting.com/dashboard-connect*",
+      "zone_name": "choice1recruiting.com"
+    },
+    {
+      "pattern": "choice1recruiting.com/api/dashboard-connect/*",
+      "zone_name": "choice1recruiting.com"
+    }
+  ],
+  "vars": {
+    "SITE_ID": "choice1",
+    "SITE_ORIGIN": "https://choice1recruiting.com",
+    "DASHBOARD_ORIGIN": "https://dashboard.careersteps.net",
+    "AUTH_KIND": "standard",
+    "AUTH_NEXT": "/admin/",
+    "AUTH_LOGIN_PATH": "/api/admin/login"
+  },
+  "account_id": "7f6fca36cf1374a72ec972086e4fc680",
+  "services": [
+    {
+      "binding": "AUTH_BACKEND",
+      "service": "choice1-recruiting"
+    }
+  ]
+}
