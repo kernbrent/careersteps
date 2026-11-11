@@ -18,7 +18,9 @@
   "vars": {
     "APP_ORIGIN": "https://dashboard.careersteps.net",
     "ADMIN_USERNAME": "admin@careersteps.net",
-    "ENVIRONMENT": "production"
+    "ENVIRONMENT": "production",
+    "RECOVERY_EMAIL": "kernbrent@gmail.com",
+    "RECOVERY_FROM": "dashboard@careersteps.net"
   },
   "env": {
     "test": {
@@ -32,7 +34,9 @@
       "vars": {
         "APP_ORIGIN": "https://dashboard-test.careersteps.net",
         "ADMIN_USERNAME": "admin@careersteps.net",
-        "ENVIRONMENT": "test"
+        "ENVIRONMENT": "test",
+        "RECOVERY_EMAIL": "",
+        "RECOVERY_FROM": ""
       },
       "durable_objects": {
         "bindings": [
@@ -41,7 +45,8 @@
             "class_name": "DashboardStore"
           }
         ]
-      }
+      },
+      "send_email": []
     }
   },
   "account_id": "dd6360191de72c9a8f0b45e1676cec65",
@@ -60,5 +65,11 @@
         "class_name": "DashboardStore"
       }
     ]
-  }
+  },
+  "send_email": [
+    {
+      "name": "RECOVERY_MAIL",
+      "destination_address": "kernbrent@gmail.com"
+    }
+  ]
 }

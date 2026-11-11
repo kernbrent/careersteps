@@ -71,3 +71,13 @@ Normal key rotation: generate and save a new per-site connection key, replace th
 ## Future highlighted data
 
 The registry is independent of site business records, so a later widgets migration can add selected metrics without changing launch credentials or merging databases. Implement read-only, explicitly scoped summary connectors per site and fetch them on the dashboard server. Do not reuse an unrestricted browser admin cookie as a data integration. Define each metric's source, reporting period, currency, permissions, refresh time, and unavailable state before displaying it. Aggregate donation/finance totals carefully: Christian Steps, Hope Sojourns, and Josh can describe the same transferred gift, so adding their figures together would double-count it. Prayer widgets must re-check audience and role permissions and should default to counts rather than private prayer text. This first release does not claim to display live business metrics.
+
+## Password recovery and visibility
+
+The login password field has an accessible eye button. It also appears on the email reset form; submitting or resetting a form masks its fields again. No revealed password is persisted.
+
+Production password recovery sends only to the operator-configured, verified recovery address, kernbrent@gmail.com, through Cloudflare's RECOVERY_MAIL binding restricted to that single destination. The source address is dashboard@careersteps.net. Test has no outbound email binding or production recovery configuration. Local Wrangler captures messages without sending them.
+
+Forgot password accepts the administrator username or configured recovery email and returns a generic response. Reset links use random 256-bit tokens in a URL fragment, removed immediately by the client. Only token hashes are stored. Links expire after 15 minutes. Rate limits apply per request IP, to global outbound delivery, and to reset attempts. The reset transaction changes only the password hash, revokes sessions and launch tickets, records an audit event, and invalidates all reset links. Saved site credentials and the vault key stay intact. Normal password changes also invalidate outstanding reset links.
+
+For operator recovery when email is unavailable, provision the temporary Cloudflare secret DASHBOARD_PASSWORD_RECOVERY containing JSON with a unique UUID id and PBKDF2 salt/hash from src/security.mjs passwordHash. Do not include a plaintext password. The DashboardStore constructor applies each ID once, transactionally, and revokes existing sessions, launch tickets, and reset links. Verify login, then remove the temporary secret. Never change VAULT_KEY or reset site storage to recover a password.

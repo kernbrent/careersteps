@@ -1,4 +1,25 @@
 const $=s=>document.querySelector(s);let sites=[],csrf='',filter='all',selected=null,clearTimer;
+function passwordVisibility(input){
+ input.setAttribute('aria-label',input.labels?.[0]?.firstChild?.textContent.trim()||'Password');
+ const control=document.createElement('span');control.className='password-control';
+ input.id||='password-'+crypto.randomUUID();input.before(control);control.append(input);
+ const button=document.createElement('button');button.type='button';button.className='password-toggle';button.setAttribute('aria-controls',input.id);button.setAttribute('aria-pressed','false');button.setAttribute('aria-label','Show password');button.title='Show password';
+ button.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="M3 3l18 18"/></svg>';
+ const hide=()=>{input.type='password';button.setAttribute('aria-pressed','false');button.setAttribute('aria-label','Show password');button.title='Show password';};
+ button.onclick=()=>{const show=input.type==='password';input.type=show?'text':'password';button.setAttribute('aria-pressed',String(show));button.setAttribute('aria-label',show?'Hide password':'Show password');button.title=show?'Hide password':'Show password';};
+ control.append(button);input.form.addEventListener('reset',hide);input.form.addEventListener('submit',hide);
+}
+passwordVisibility($('#login-form').elements.password);
+passwordVisibility($('#reset-form').elements.newPassword);
+passwordVisibility($('#reset-form').elements.confirm);
+let resetToken='';
+function openResetLink(){const value=new URLSearchParams(location.hash.slice(1)).get('reset');if(!value)return;resetToken=value;history.replaceState(null,'',location.pathname+location.search);$('#reset-form').reset();message($('#reset-form'));$('#reset-dialog').showModal();}
+openResetLink();window.addEventListener('hashchange',openResetLink);
+const forgotButton=document.createElement('button');forgotButton.type='button';forgotButton.className='forgot-password';forgotButton.textContent='Forgot password?';$('#login-form').append(forgotButton);
+forgotButton.onclick=()=>{const f=$('#forgot-form');f.reset();f.elements.username.value=$('#login-form').elements.username.value;message(f);$('#forgot-dialog').showModal();};
+$('#forgot-form').onsubmit=e=>{e.preventDefault();const f=e.currentTarget;void submit(f,async()=>{const result=await api('/api/password/request-reset',{method:'POST',body:JSON.stringify({username:f.elements.username.value})});message(f,result.message);});};
+$('#reset-form').onsubmit=e=>{e.preventDefault();const f=e.currentTarget;void submit(f,async()=>{if(f.elements.newPassword.value!==f.elements.confirm.value)throw Error('The new passwords do not match.');await api('/api/password/reset',{method:'POST',body:JSON.stringify({token:resetToken,newPassword:f.elements.newPassword.value})});csrf='';sites=[];$('#sites').replaceChildren();$('#workspace').hidden=true;$('#login').hidden=false;f.reset();$('#reset-dialog').close();$('#login-form').elements.password.value='';message($('#login-form'),'Your dashboard password has been reset. Sign in with your new password.');});};
+$('#reset-dialog').addEventListener('close',()=>{resetToken='';$('#reset-form').reset();message($('#reset-form'));});
 async function api(path,options={}){const r=await fetch(path,{...options,headers:{'Content-Type':'application/json',...(csrf?{'X-CSRF-Token':csrf}:{}),...options.headers},credentials:'same-origin',cache:'no-store'});const b=await r.json();if(!r.ok){if(r.status===401&&path!=='/api/login'){csrf='';sites=[];$('#sites').replaceChildren();$('#workspace').hidden=true;$('#login').hidden=false;document.querySelectorAll('dialog[open]').forEach(d=>d.close());}throw Error(b.error||'Please try again.');}return b;}
 function message(form,text=''){form.querySelector('.message').textContent=text;}
 async function submit(form,work){const button=form.querySelector('button[type=submit]');button.disabled=true;message(form);try{await work();}catch(e){message(form,e.message);}finally{button.disabled=false;}}
