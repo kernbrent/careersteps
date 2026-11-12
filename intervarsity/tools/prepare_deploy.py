@@ -10,6 +10,7 @@ class Page(HTMLParser):
         super().__init__()
         self.refs, self.options, self.ids = [], [], []
         self.h1 = self.selected = 0
+        self.in_concept_select = False
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         if attrs.get('id'):
@@ -19,9 +20,14 @@ class Page(HTMLParser):
         for key in ('src', 'href'):
             if attrs.get(key):
                 self.refs.append(attrs[key])
-        if tag == 'option':
+        if tag == 'select':
+            self.in_concept_select = 'data-concept-select' in attrs
+        if tag == 'option' and self.in_concept_select:
             self.options.append(attrs['value'])
             self.selected += 'selected' in attrs
+    def handle_endtag(self, tag):
+        if tag == 'select':
+            self.in_concept_select = False
 
 build()
 expected = [ROOT / prefix / page for _, _, prefix in CONCEPTS for page in PAGES]
@@ -31,7 +37,7 @@ for path in expected:
     parsed.feed(source)
     assert parsed.h1 == 1, f'Expected one page heading: {path}'
     assert len(parsed.ids) == len(set(parsed.ids)), f'Duplicate IDs: {path}'
-    assert len(parsed.options) == 5 and parsed.selected == 1, f'Invalid selector: {path}'
+    assert len(parsed.options) == len(CONCEPTS) and parsed.selected == 1, f'Invalid selector: {path}'
     assert source.count('Website designed and maintained by') == 1, f'Missing footer: {path}'
     assert 'noindex,nofollow' in source, f'Review indexing protection missing: {path}'
     for ref in parsed.refs + parsed.options:

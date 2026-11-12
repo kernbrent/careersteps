@@ -1,4 +1,4 @@
-"""Build five review concepts, each with six static pages. No external dependencies."""
+"""Build seven review concepts, each with six static pages. No external dependencies."""
 from pathlib import Path
 import re
 import posixpath
@@ -10,6 +10,8 @@ CONCEPTS = [
     ('field', '03 · Field Notes', 'versions/field/'),
     ('common', '04 · Common Ground', 'versions/common/'),
     ('compass', '05 · Quiet Compass', 'versions/compass/'),
+    ('story', '06 · Purpose in Practice', 'versions/story/'),
+    ('nocturne', '07 · After Hours', 'versions/nocturne/'),
 ]
 PAGES = {'index.html': 'Home', 'about.html': 'About', 'consulting.html': 'Consulting', 'ministry.html': 'Ministry', 'partnerships.html': 'Partnerships', 'connect.html': 'Connect'}
 BOOK = 'https://outlook.office.com/bookwithme/user/db5b1a8f2cda463b9ffca39624743552@intervarsity.org?anonymous&amp;ep=plink'
@@ -23,9 +25,14 @@ def portrait(asset, cls='bio-photo'):
 def header(theme, page, asset, prefix):
     options = ''.join(f'<option value="{posixpath.relpath(p + page, prefix or ".")}"'+(' selected' if t == theme else '')+f'>{name}</option>' for t, name, p in CONCEPTS)
     nav = ''.join(f'<a href="{url}"'+(' aria-current="page"' if url == page else '')+f'>{name}</a>' for url, name in PAGES.items())
+    if theme in ('story', 'nocturne'):
+        nav += '<a class="story-give-link" href="https://givetoiv.org/benzigeorge">Support my ministry ↗</a>'
+    palette = '' if theme != 'story' else '<div class="story-palette wrap"><span>06 / PURPOSE IN PRACTICE</span><label for="palette-select">Explore colors <select id="palette-select" data-palette-select><option value="ocean">Ocean & copper</option><option value="pine">Pine & sand</option><option value="ink">Ink & gold</option></select></label></div>'
+    if theme == 'nocturne':
+        palette = '<div class="story-palette nocturne-label wrap"><span>07 / AFTER HOURS</span><span>CHARCOAL · PARCHMENT · COPPER</span></div>'
     return f'''<a class="skip" href="#main">Skip to content</a>
     <div class="concept-toolbar"><div class="wrap concept-controls"><div><span class="review-dot"></span> DESIGN STUDIO <span class="review-label">/ Concept review</span></div><label for="concept-select">Explore a design <select id="concept-select" data-concept-select>{options}</select></label></div></div>
-    <header class="header wrap"><a class="brand" href="index.html"><img src="{asset}logo-{theme}.svg" width="48" height="48" alt=""><span>Benzi George<small>LEADERSHIP WITH PURPOSE</small></span></a><nav aria-label="Primary navigation">{nav}</nav></header>'''
+    <header class="header wrap"><a class="brand" href="index.html"><img src="{asset}logo-{theme}.svg" width="48" height="48" alt=""><span>Benzi George<small>LEADERSHIP WITH PURPOSE</small></span></a><nav aria-label="Primary navigation">{nav}</nav></header>{palette}'''
 
 def footer(asset):
     return f'''<footer class="wrap footer"><a class="brand" href="index.html"><span>Benzi George<small>LEADERSHIP WITH PURPOSE</small></span></a><p>People. Purpose. Practical progress.</p><div class="footer-links"><a href="consulting.html">Consulting</a><a href="ministry.html">Ministry</a><a href="partnerships.html">Partnerships</a><a href="connect.html">Connect</a></div><div class="footer-credit"><a class="developer-credit" href="https://careersteps.net/" aria-label="Visit Career Steps Consulting LLC"><img src="{asset}career-steps-logo.png" width="28" height="28" alt=""><span>Website designed and maintained by <strong>Career Steps Consulting LLC.</strong></span></a></div></footer>'''
@@ -105,7 +112,22 @@ def connect():
 def routes():
     return '<div class="route-pair"><a href="consulting.html"><span>FOR YOUR ORGANIZATION</span><h3>Consulting & coaching</h3><p>Executive capacity, strategic clarity, and stronger teams.</p><b aria-hidden="true">↗</b></a><a href="ministry.html"><span>FOR A GREATER PURPOSE</span><h3>InterVarsity ministry</h3><p>Serving students, faculty, and the leaders who support them.</p><b aria-hidden="true">↗</b></a></div>'
 
+def giving_panel():
+    return '<section class="story-giving"><div><p class="eyebrow">Partner in the campus mission</p><h2>Help the work<br><em>go further.</em></h2><p>Prayer, encouragement, and financial partnership help sustain the ministry. If you would like to give, use my official InterVarsity giving page.</p></div><div>'+action('https://givetoiv.org/benzigeorge','Support my InterVarsity ministry')+'<a class="giving-address" href="https://givetoiv.org/benzigeorge">givetoiv.org/benzigeorge</a><p class="giving-detail">You’ll continue to InterVarsity to make your gift.<br>Ministry giving is separate from consulting fees.</p></div></section>'
+
+def story_home(asset):
+    return f'''<section class="story-hero" aria-labelledby="story-title"><div class="story-hero-copy"><p class="eyebrow">BENZI GEORGE</p><h1 id="story-title">Leadership.<br>Purpose.<br><em>People.</em></h1><p>I come alongside leaders and teams to bring clarity to the work—and encouragement to the people doing it.</p><div class="actions">{action('about.html','Get to know Benzi')}{action('consulting.html','Explore consulting','text-link')}</div></div><figure class="story-portrait"><div class="story-portrait-frame">{portrait(asset)}</div><figcaption>Executive partner. Coach. Ministry leader.</figcaption></figure></section>
+    <nav class="story-role-nav" aria-label="Explore Benzi’s work"><a href="#executive"><span>01</span> Executive partner <b aria-hidden="true">↓</b></a><a href="#coach"><span>02</span> Leadership coach <b aria-hidden="true">↓</b></a><a href="#calling"><span>03</span> Ministry leader <b aria-hidden="true">↓</b></a></nav>
+    <section class="story-intro content-section"><div><p class="eyebrow">The heart behind the work</p><h2>Different settings.<br><em>The same heart.</em></h2></div><div class="prose"><p class="large">For me, leadership begins with a relationship.</p><p>Whether I’m working alongside an executive team or serving leaders in campus ministry, I want to help people see what is possible—and find a practical way forward.</p><p>My path has taken me from healthcare into InterVarsity ministry, and from local campuses into regional and national leadership. Today, those experiences also shape my work as an executive partner and coach.</p><blockquote>“My leadership philosophy is to pray, plan, and play.”<cite>— Benzi George</cite></blockquote></div></section>
+    <section class="story-journey content-section"><p class="eyebrow">A little of my story</p><h2>A step of faith.<br><em>A wider calling.</em></h2><ol><li><span>HEALTHCARE</span><div><h3>A foundation in people and systems.</h3><p>A degree in Healthcare Administration and a healthcare career began my professional journey.</p></div></li><li><span>2011</span><div><h3>A call to campus.</h3><p>I joined InterVarsity to serve students and faculty at the University of North Texas and Texas Woman’s University.</p></div></li><li><span>2014 → 2020</span><div><h3>Leading across teams and regions.</h3><p>Area leadership in Greater North Texas grew into regional responsibilities across the Red River Region.</p></div></li><li><span>THE WORK TODAY</span><div><h3>Coming alongside leaders.</h3><p>National field ministry leadership, fractional executive partnership, and coaching bring together the different parts of my story.</p></div></li></ol>{action('about.html','Read the full story','text-link')}</section>
+    <section class="story-work" id="executive"><div class="story-philosophy"><span class="eyebrow">A RHYTHM FOR THE WORK</span><p>Pray.<br>Plan.<br><em>Play.</em></p><span>Purpose. Intentionality. Joy.</span></div><div class="story-work-copy"><p class="eyebrow">Executive partnership</p><h2>A clear direction.<br><em>A partner in the work.</em></h2><p>Your organization may need more leadership capacity, a clearer plan, or support moving priorities into practice. Let’s explore what would make the greatest difference.</p><div class="story-focus"><article><h3>Fractional executive leadership</h3><p>Chief of Staff, COO, and hybrid support for an agreed portion of the working week.</p></article><article><h3>Strategy & organizational alignment</h3><p>Planning, team coordination, and practical rhythms that connect vision with follow-through.</p></article></div>{action('consulting.html','Explore executive support')}</div></section>
+    <section class="story-coach content-section" id="coach"><div><p class="eyebrow">Coaching & encouragement</p><h2>You lead others.<br><em>Who walks with you?</em></h2></div><div class="prose"><p class="large">Leadership asks a lot of a person. It helps to have space to think out loud.</p><p>My coaching approach is rooted in coming alongside: listening, helping you clarify what matters, and encouraging you to lead with courage. We can work individually or with your team through a season of growth, change, or new responsibility.</p><div class="actions">{action('consulting.html','Explore coaching & training')}{action('connect.html','Start a conversation','text-link')}</div></div></section>
+    <section class="story-calling content-section" id="calling"><div><p class="eyebrow">InterVarsity Christian Fellowship/USA</p><h2>A life of faith.<br><em>A calling to serve.</em></h2><p class="large">Helping students, faculty, and the leaders who serve them grow into their calling.</p></div><div class="prose"><p>What began on North Texas campuses has grown into opportunities to support ministry at the area, regional, and national levels.</p><p>As National Associate ED/COS for Field Ministries, I work alongside leaders who care deeply about the campus mission. Behind the plans and projects are people—and a desire to see lives shaped by Jesus.</p><div class="actions">{action('ministry.html','Discover my ministry')}{action('https://givetoiv.org/benzigeorge','Become a ministry partner','text-link')}</div></div></section>
+    <section class="story-partners content-section"><p class="eyebrow">Relationships that connect the work</p><h2>Better, <em>together.</em></h2><div class="story-partner-logos"><a href="https://intervarsity.org/"><img src="{asset}intervarsity-logo.svg" width="602" height="122" alt="InterVarsity Christian Fellowship/USA"></a><a href="https://careersteps.net/"><img src="{asset}career-steps-logo.png" width="1024" height="1024" alt="Career Steps Consulting LLC"></a><a href="https://hopesojourns.com/"><img src="{asset}hope-sojourns-logo.png" width="1326" height="739" alt="Hope Sojourns"></a></div>{action('partnerships.html','Meet the partners','text-link')}</section>'''+giving_panel()+f'''<section class="story-connect content-section"><div><p class="eyebrow">Let’s begin with a conversation</p><h2>What’s your<br><em>next step?</em></h2><p>A leadership question. A new opportunity. A ministry connection.<br>I’d be glad to hear what you’re thinking about.</p></div>{action('connect.html','Let’s connect')}</section>'''
+
 def home(theme, asset):
+    if theme in ('story', 'nocturne'):
+        return story_home(asset)
     if theme == 'atlas':
         hero=f'''<section class="atlas-hero wrap"><div class="atlas-title"><p class="eyebrow">BENZI GEORGE / EXECUTIVE PARTNER</p><h1>Clarity.<br>Capacity.<br><em>Forward.</em></h1><p class="lead">The next chapter of your organization deserves a partner in the work.</p>{action('consulting.html','Build what’s next')}</div><div class="atlas-visual"><div class="atlas-photo">{portrait(asset)}</div><div class="atlas-stamp">PEOPLE +<br>SYSTEMS +<br>PURPOSE</div><div class="strategy-map"><span>VISION</span><i></i><span>ALIGNMENT</span><i></i><strong>ACTION ↗</strong></div></div></section><div class="atlas-marquee">FRACTIONAL LEADERSHIP <span>↗</span> COACHING <span>↗</span> STRATEGY <span>↗</span> MINISTRY</div>'''
     elif theme == 'field':
@@ -139,10 +161,18 @@ def build():
                 (output/page).write_text(original,encoding='utf-8')
                 continue
             body=home(theme,asset) if page=='index.html' else {'about.html':lambda:about(asset),'consulting.html':consulting,'ministry.html':ministry,'partnerships.html':lambda:partnerships(asset),'connect.html':connect}[page]()
+            if theme in ('story', 'nocturne') and page in ('ministry.html', 'connect.html'):
+                body += giving_panel()
+            extra_css = f'<link rel="stylesheet" href="{asset}story.css">' if theme in ('story', 'nocturne') else ''
+            if theme == 'nocturne':
+                extra_css += f'<link rel="stylesheet" href="{asset}nocturne.css">'
             html=f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="description" content="Benzi George — {name}: fractional leadership, coaching, and InterVarsity ministry."><title>{name} | Benzi George — {label.split(' · ')[1]}</title><link rel="icon" type="image/svg+xml" href="{asset}logo-{theme}.svg"><link rel="stylesheet" href="{asset}site.css"><link rel="stylesheet" href="{asset}concepts.css"><script src="{asset}concepts.js" defer></script></head><body class="theme-{theme} page-{page.split('.')[0]}" data-page="{page}">{header(theme,page,asset,prefix)}<main id="main">{body}</main>{footer(asset)}</body></html>'''
+            html = html.replace('</head>', extra_css + '</head>')
+            if theme == 'nocturne':
+                html = html.replace('class="theme-nocturne ', 'class="theme-story theme-nocturne ')
             (output/page).write_text(html,encoding='utf-8')
-    print('Built 30 static pages across five concepts.')
+    print(f'Built {len(CONCEPTS) * len(PAGES)} static pages across {len(CONCEPTS)} concepts.')
 
 if __name__=='__main__':
     build()

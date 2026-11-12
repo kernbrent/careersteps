@@ -1,14 +1,14 @@
-# Benzi George — five website review concepts
+# Benzi George — seven website review concepts
 
 ## Partner logo assets
 
-All five Partnerships pages use proportionally scaled, locally served partner logos on light backgrounds for legibility across themes. InterVarsity's unmodified SVG was downloaded from `https://intervarsity.org/themes/custom/ivnational/logo.svg`, the logo used by its official website. Hope Sojourns uses the existing `A_WebDev/HopeSojourns/assets/hope-sojourns-logo.png`; Career Steps uses this project's existing `assets/career-steps-logo.png`. Logos remain the property of their respective organizations.
+All seven Partnerships pages use proportionally scaled, locally served partner logos on light backgrounds for legibility across themes. InterVarsity's unmodified SVG was downloaded from `https://intervarsity.org/themes/custom/ivnational/logo.svg`, the logo used by its official website. Hope Sojourns uses the existing `A_WebDev/HopeSojourns/assets/hope-sojourns-logo.png`; Career Steps uses this project's existing `assets/career-steps-logo.png`. Logos remain the property of their respective organizations.
 
-Five complete concepts for **https://intervarsity.careersteps.net**. Each contains Home, About, Consulting, Ministry, Partnerships, and Connect. The design dropdown preserves the current page. `noindex,nofollow` and a robots exclusion are intentional while Benzi reviews the concepts.
+Seven complete concepts for **https://intervarsity.careersteps.net**. Each contains Home, About, Consulting, Ministry, Partnerships, and Connect. The design dropdown preserves the current page. `noindex,nofollow` and a robots exclusion are intentional while Benzi reviews the concepts.
 
 ## Preview
 
-Serve this directory using a local static server. Page content works without JavaScript or third-party fonts; the design dropdown uses `assets/concepts.js`. The local preview uses port 8766. Run `python tools/build_concepts.py` from this directory to regenerate all 30 pages.
+Serve this directory using a local static server. Page content works without JavaScript or third-party fonts; the design dropdown uses `assets/concepts.js`. The local preview uses port 8766. Run `python tools/build_concepts.py` from this directory to regenerate all 42 pages.
 
 ## Direction
 
@@ -50,4 +50,22 @@ node --check intervarsity/assets/concepts.js
 node worker/node_modules/wrangler/bin/wrangler.js deploy --config intervarsity/wrangler.jsonc --dry-run
 ```
 
-After explicit release approval, deploy using the same Wrangler command without `--dry-run`. The account and single custom domain are pinned in the config. Existing CareerSteps and admin deployments remain independent. Browser automation was unavailable for visual review; structural validation, image validation, link checks, local HTTP checks, deployment dry run, and live HTTP verification are the available release checks.
+After explicit release approval, deploy using the same Wrangler command without `--dry-run`. The account and single custom domain are pinned in the config. Existing CareerSteps and admin deployments remain independent. The original five concepts were released with structural, asset, link, local HTTP, dry-run, and live HTTP verification. Version 06 was additionally reviewed in the browser at desktop (1280px) and mobile (390px) widths, with color persistence, image loading, horizontal overflow, and page-preserving concept switching checked.
+
+## Version 06 — Purpose in Practice (November 12, 2026)
+
+Based on Benzi's November 10 reply, message `1a1c5e6b4117b6d4`. He prefers Option 4's approachable feel, wants to explore other colors, and requested a layout related to Josh Beyond Borders and https://linsondaniel.com/. The sixth concept uses a framed, photo-led hero; role-based links for executive partnership, coaching, and ministry; a personal story; ministry timeline; service sections; partner logos; and a giving invitation. No reference-site biography, testimonials, photos, or unrelated personal roles were reused.
+
+Three palette options (Ocean & Copper, Pine & Sand, Ink & Gold) are available on all six pages of version 06; the choice persists within the browser session. The original five designs receive only the sixth dropdown option.
+
+Benzi's signature giving URL, https://givetoiv.org/benzigeorge, appears in every version 06 header and in dedicated homepage, ministry, and contact giving sections. It leads to InterVarsity for gifts; consulting remains separate. Brent approved committing, pushing, and deploying versions 06 and 07 on November 12, 2026.
+
+## Version 07 — After Hours (November 12, 2026)
+
+Requested as a separate version using the very dark palette of Josh Beyond Borders. Reuses version 06's story-led structure and content, with a dedicated charcoal, warm parchment, dark rust, and copper design across all six pages. The original portrait is displayed proportionally at a smaller size with rounded corners, an offset outline, and a soft frame; its source image is unchanged. Official partner logos retain their original colors and light surfaces for legibility. The InterVarsity giving URL remains in the header and giving sections.
+
+Version 06's three selectable palettes are unchanged. Version 07 has a fixed dark palette. All seven concepts are available through the page-preserving dropdown. All 42 pages pass structural/link validation; version 07 additionally passes desktop and 390px mobile browser checks, image loading, giving-link checks, and switching to/from version 06. Brent approved release of versions 06 and 07 on November 12, 2026, including the subsequent site-wide typography and portrait presentation refinements.
+
+## November 12 review refinements
+
+Option 4’s Trebuchet heading family and a smaller scale apply throughout every page of concepts 06 and 07, including role links and display text. Both concepts use a smaller framed portrait with more breathing room. Browser checks verified desktop and mobile layouts, heading consistency on all 12 pages, intact image proportions, giving links, and seven-way concept navigation.
